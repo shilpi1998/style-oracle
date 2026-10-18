@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Playfair_Display, Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ClientLayout } from "./client-layout";
 
-const inter = Inter({
-  variable: "--font-inter",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
+});
+
+const instrument = Instrument_Sans({
+  variable: "--font-instrument",
+  subsets: ["latin"],
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -16,8 +27,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
+    <html
+      lang="en"
+      className={`${playfair.variable} ${instrument.variable} ${plexMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
