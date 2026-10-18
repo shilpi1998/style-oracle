@@ -1,9 +1,15 @@
 import { Firestore } from "@google-cloud/firestore";
 import { Product } from "./types";
+import { products as localProducts } from "@/data/products";
 
 const IMAGE_BASE = "/images/products";
+const FIRESTORE_PROBE_TIMEOUT_MS = 3000;
 
 let db: Firestore;
+// null = untested, true = Firestore reachable, false = fall back to local catalog.
+// The local catalog (src/data/products.ts) mirrors the Firestore "products"
+// collection, so dev/preview environments without GCP credentials still work.
+let firestoreAvailable: boolean | null = null;
 
 function getDb() {
   if (!db) {
@@ -14,23 +20,63 @@ function getDb() {
   return db;
 }
 
+async function withLocalFallback<T>(
+  op: () => Promise<T>,
+  local: () => T
+): Promise<T> {
+  if (firestoreAvailable === false) return local();
+  try {
+    const result = await Promise.race([
+      op(),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("firestore-unreachable")),
+          FIRESTORE_PROBE_TIMEOUT_MS
+        )
+      ),
+    ]);
+    firestoreAvailable = true;
+    return result;
+  } catch (err) {
+    // Only latch to fallback on the first probe; once Firestore is known
+    // good (deployed env), transient errors shouldn't disable it.
+    if (firestoreAvailable === null) firestoreAvailable = false;
+    return local();
+  }
+}
+
 export async function getAllProducts(): Promise<Product[]> {
-  const snapshot = await getDb().collection("products").get();
-  return snapshot.docs.map((doc) => doc.data() as Product);
+  return withLocalFallback(
+    async () => {
+      const snapshot = await getDb().collection("products").get();
+      return snapshot.docs.map((doc) => doc.data() as Product);
+    },
+    () => localProducts
+  );
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const doc = await getDb().collection("products").doc(id).get();
-  if (!doc.exists) return null;
-  return doc.data() as Product;
+  return withLocalFallback(
+    async () => {
+      const doc = await getDb().collection("products").doc(id).get();
+      if (!doc.exists) return null;
+      return doc.data() as Product;
+    },
+    () => localProducts.find((p) => p.id === id) || null
+  );
 }
 
 export async function getProductsByCategory(subcategory: string): Promise<Product[]> {
-  const snapshot = await getDb()
-    .collection("products")
-    .where("subcategory", "==", subcategory)
-    .get();
-  return snapshot.docs.map((doc) => doc.data() as Product);
+  return withLocalFallback(
+    async () => {
+      const snapshot = await getDb()
+        .collection("products")
+        .where("subcategory", "==", subcategory)
+        .get();
+      return snapshot.docs.map((doc) => doc.data() as Product);
+    },
+    () => localProducts.filter((p) => p.subcategory === subcategory)
+  );
 }
 
 export async function searchProducts(query: string): Promise<Product[]> {

@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Search, ShoppingBag, Sparkles, Menu, X } from "lucide-react";
+import { Search, ShoppingBag, Menu, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/lib/cart-context";
 
@@ -63,19 +62,18 @@ export function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-cream/90 backdrop-blur-md border-b border-hairline">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <Sparkles className="h-6 w-6 text-violet-600" />
-            <span className="text-xl font-bold tracking-tight text-gray-900">
-              Style<span className="text-violet-600">Oracle</span>
+          {/* Wordmark */}
+          <Link href="/" className="flex items-baseline gap-2 shrink-0" data-testid="navbar-home-link">
+            <span className="font-heading text-2xl tracking-tight text-ink">
+              Style<span className="italic text-gold">Oracle</span>
             </span>
           </Link>
 
           {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-1 ml-8">
+          <div className="hidden lg:flex items-center gap-6 ml-10">
             {navLinks.map((group) => (
               <div
                 key={group.label}
@@ -83,16 +81,19 @@ export function Navbar() {
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-violet-600 transition-colors">
+                <button
+                  data-testid={`navbar-menu-${group.label.toLowerCase()}`}
+                  className="px-1 py-2 font-mono text-xs uppercase tracking-[0.15em] text-smoke hover:text-gold transition-colors"
+                >
                   {group.label}
                 </button>
                 {activeDropdown === group.label && (
-                  <div className="absolute top-full left-0 w-52 bg-white border border-gray-100 rounded-lg shadow-lg py-2 z-50">
+                  <div className="absolute top-full left-0 w-52 bg-white/95 backdrop-blur-xl border border-hairline rounded-md shadow-xl py-2 z-50 animate-bounce-in">
                     {group.children.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-violet-50 hover:text-violet-600 transition-colors"
+                        className="block px-4 py-2 text-sm text-smoke hover:bg-parchment hover:text-ink transition-colors"
                       >
                         {link.label}
                       </Link>
@@ -103,32 +104,41 @@ export function Navbar() {
             ))}
             <Link
               href="/style-studio"
-              className="px-3 py-2 text-sm font-semibold text-violet-600 hover:text-violet-700 flex items-center gap-1"
+              data-testid="navbar-style-studio-link"
+              className="px-1 py-2 font-mono text-xs uppercase tracking-[0.15em] text-gold-dark hover:text-gold transition-colors border-b border-gold/40 hover:border-gold"
             >
-              <Sparkles className="h-4 w-4" />
               Style Studio
             </Link>
           </div>
 
           {/* Search + Cart */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <form onSubmit={handleSearch} className="hidden sm:flex items-center">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-smoke/60" />
                 <Input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Search the archive..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-56 lg:w-72 h-9 text-sm"
+                  className="pl-9 w-52 lg:w-64 h-9 text-sm bg-white/70 border-hairline rounded-full"
+                  data-testid="navbar-search-input"
                 />
               </div>
             </form>
 
-            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-violet-600">
+            <Link
+              href="/cart"
+              className="relative p-2 text-ink hover:text-gold transition-colors"
+              data-testid="navbar-cart-link"
+              aria-label="Open shopping bag"
+            >
               <ShoppingBag className="h-5 w-5" />
               {totalItems > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-violet-600">
+                <Badge
+                  className="absolute -top-0.5 -right-0.5 h-5 min-w-5 flex items-center justify-center p-0 px-1 text-[10px] font-mono bg-ink text-cream rounded-full"
+                  data-testid="navbar-cart-badge"
+                >
                   {totalItems}
                 </Badge>
               )}
@@ -136,8 +146,10 @@ export function Navbar() {
 
             {/* Mobile menu button */}
             <button
-              className="lg:hidden p-2 text-gray-700"
+              className="lg:hidden p-2 text-ink"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-testid="navbar-mobile-menu-button"
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -148,13 +160,14 @@ export function Navbar() {
         <div className="sm:hidden pb-3">
           <form onSubmit={handleSearch}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-smoke/60" />
               <Input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search the archive..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-sm"
+                className="pl-9 h-9 text-sm bg-white/70 border-hairline rounded-full"
+                data-testid="navbar-search-input-mobile"
               />
             </div>
           </form>
@@ -163,18 +176,18 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-gray-100 bg-white">
-          <div className="px-4 py-3 space-y-3">
+        <div className="lg:hidden border-t border-hairline bg-cream/95 backdrop-blur-md">
+          <div className="px-4 py-4 space-y-4">
             {navLinks.map((group) => (
               <div key={group.label}>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold-dark mb-1.5">
                   {group.label}
                 </p>
                 {group.children.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="block py-1.5 text-sm text-gray-700"
+                    className="block py-1.5 text-sm text-smoke"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.label}
@@ -184,10 +197,10 @@ export function Navbar() {
             ))}
             <Link
               href="/style-studio"
-              className="flex items-center gap-2 py-2 text-sm font-semibold text-violet-600"
+              className="flex items-center gap-2 py-2 font-mono text-xs uppercase tracking-[0.15em] text-gold-dark border-t border-hairline pt-4"
               onClick={() => setMobileMenuOpen(false)}
+              data-testid="navbar-style-studio-link-mobile"
             >
-              <Sparkles className="h-4 w-4" />
               Style Studio
             </Link>
           </div>

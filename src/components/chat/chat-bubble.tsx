@@ -118,10 +118,11 @@ export function ChatBubble() {
             setShowPopup(false);
             setIsOpen(true);
           }}
+          data-testid="chat-popup-tooltip"
         >
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-2.5 max-w-[220px]">
-            <span className="text-xl">👋</span>
-            <p className="text-sm text-gray-700 font-medium leading-tight">
+          <div className="bg-white/95 backdrop-blur-xl rounded-md shadow-[0_12px_28px_rgba(18,18,18,0.12)] border border-hairline px-4 py-3 flex items-center gap-2.5 max-w-[220px]">
+            <span className="font-heading italic text-gold-dark text-lg leading-none">À</span>
+            <p className="text-sm text-ink font-medium leading-tight">
               Hi! I&apos;m your shopper agent
             </p>
             <button
@@ -129,12 +130,14 @@ export function ChatBubble() {
                 e.stopPropagation();
                 setShowPopup(false);
               }}
-              className="text-gray-400 hover:text-gray-600 shrink-0"
+              className="text-smoke/60 hover:text-ink shrink-0"
+              aria-label="Dismiss greeting"
+              data-testid="chat-popup-dismiss"
             >
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
-          <div className="absolute -bottom-1.5 right-8 w-3 h-3 bg-white border-r border-b border-gray-200 rotate-45" />
+          <div className="absolute -bottom-1.5 right-8 w-3 h-3 bg-white border-r border-b border-hairline rotate-45" />
         </div>
       )}
 
@@ -144,11 +147,13 @@ export function ChatBubble() {
           setIsOpen(!isOpen);
           setShowPopup(false);
         }}
+        data-testid="chat-toggle-button"
+        aria-label={isOpen ? "Close style chat" : "Open style chat"}
         className={cn(
-          "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105",
+          "fixed bottom-6 right-6 z-50 w-14 h-14 shadow-[0_12px_28px_rgba(18,18,18,0.2)] flex items-center justify-center transition-all duration-300 hover:scale-105 motion-reduce:hover:scale-100",
           isOpen
-            ? "bg-gray-800 text-white"
-            : "bg-violet-600 text-white hover:bg-violet-700"
+            ? "bg-ink-soft text-cream"
+            : "bg-ink text-cream hover:bg-ink-soft"
         )}
       >
         {isOpen ? (
@@ -160,32 +165,37 @@ export function ChatBubble() {
 
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[400px] h-[560px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+        <div
+          className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] h-[560px] bg-white/95 backdrop-blur-xl rounded-md shadow-[0_24px_60px_rgba(18,18,18,0.18)] border border-hairline flex flex-col overflow-hidden animate-bounce-in"
+          data-testid="chat-panel"
+        >
           {/* Header */}
-          <div className="px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
+          <div className="px-4 py-3.5 bg-ink text-cream flex items-center gap-2.5">
+            <Sparkles className="h-4 w-4 text-gold-light" />
             <div>
-              <h3 className="font-semibold text-sm">Style Oracle</h3>
-              <p className="text-xs text-violet-200">
+              <h3 className="font-heading text-lg tracking-tight leading-none">
+                Style <span className="italic text-gold-light">Oracle</span>
+              </h3>
+              <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-cream/50 mt-1">
                 Powered by Gemini + Vertex AI
               </p>
             </div>
           </div>
 
           {/* Messages */}
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+          <ScrollArea className="flex-1 p-4 bg-cream/60" ref={scrollRef}>
             <div className="space-y-4">
               {messages.map((msg) => (
                 <div key={msg.id}>
                   {msg.isWelcome ? (
                     <div className="text-center py-6">
-                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 mb-3">
-                        <Sparkles className="h-6 w-6 text-violet-600" />
+                      <div className="inline-flex items-center justify-center w-12 h-12 border border-hairline bg-white mb-3">
+                        <Sparkles className="h-5 w-5 text-gold" />
                       </div>
-                      <h3 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-1">
+                      <h3 className="font-heading text-xl italic tracking-tight text-ink mb-1">
                         {msg.content}
                       </h3>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-smoke/70 mt-1">
                         Tell me an occasion, a vibe, or a budget
                       </p>
                     </div>
@@ -198,10 +208,10 @@ export function ChatBubble() {
                   >
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed",
+                        "max-w-[85%] px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed",
                         msg.role === "user"
-                          ? "bg-violet-600 text-white rounded-br-md"
-                          : "bg-gray-100 text-gray-800 rounded-bl-md"
+                          ? "bg-ink text-cream"
+                          : "bg-white border border-hairline text-ink"
                       )}
                     >
                       {msg.content}
@@ -223,9 +233,9 @@ export function ChatBubble() {
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-violet-600" />
-                    <span className="text-xs text-gray-500">
+                  <div className="bg-white border border-hairline px-4 py-3 flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-gold" />
+                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-smoke">
                       Styling your look...
                     </span>
                   </div>
@@ -235,20 +245,22 @@ export function ChatBubble() {
           </ScrollArea>
 
           {/* Input */}
-          <form onSubmit={handleSend} className="p-3 border-t border-gray-100">
+          <form onSubmit={handleSend} className="p-3 border-t border-hairline bg-white">
             <div className="flex gap-2">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Describe your ideal look..."
-                className="text-sm"
+                className="text-sm border-hairline bg-cream/60"
                 disabled={isLoading}
+                data-testid="chat-input"
               />
               <Button
                 type="submit"
                 size="icon"
-                className="bg-violet-600 hover:bg-violet-700 shrink-0"
+                className="bg-ink text-cream hover:bg-ink-soft shrink-0 rounded-none sm:rounded-sm"
                 disabled={!input.trim() || isLoading}
+                data-testid="chat-send-button"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -264,9 +276,10 @@ function ProductMiniCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/product/${product.id}`}
-      className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-gray-200 hover:border-violet-300 hover:shadow-sm transition-all group"
+      className="flex items-center gap-3 p-2.5 bg-white border border-hairline hover:border-gold/60 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(18,18,18,0.08)] transition-all duration-300 group"
+      data-testid={`chat-product-card-${product.id}`}
     >
-      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+      <div className="w-12 h-12 bg-parchment flex items-center justify-center shrink-0 overflow-hidden border border-hairline-soft">
         {product.images[0] ? (
           <img
             src={product.images[0]}
@@ -286,21 +299,21 @@ function ProductMiniCard({ product }: { product: Product }) {
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-violet-600">
+        <p className="text-sm font-medium text-ink truncate group-hover:text-gold-dark transition-colors">
           {product.name}
         </p>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-900">
+          <span className="font-mono text-sm text-gold-dark">
             ₹{product.price.toLocaleString("en-IN")}
           </span>
           {product.tryOnCompatible && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded-full font-medium">
+            <span className="font-mono text-[9px] uppercase tracking-[0.12em] px-1.5 py-0.5 bg-parchment text-gold-dark border border-hairline">
               Try On
             </span>
           )}
         </div>
       </div>
-      <ExternalLink className="h-3.5 w-3.5 text-gray-400 group-hover:text-violet-500 shrink-0" />
+      <ExternalLink className="h-3.5 w-3.5 text-smoke/40 group-hover:text-gold shrink-0" />
     </Link>
   );
 }

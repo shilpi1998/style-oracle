@@ -1,0 +1,202 @@
+{
+  "theme": "light",
+  "direction": "Editorial Fashion House — Warm Cream/Ink Palette with Serif Display Headlines, Asymmetric Magazine Layouts, and Soft Glassmorphism",
+  "colors": {
+    "surfaces": [
+      {
+        "name": "page",
+        "kind": "solid",
+        "bg": "#FAF7F2",
+        "on_bg": "#121212",
+        "on_bg_muted": "#5C5852",
+        "roles": {
+          "border": "#E5DFD5",
+          "accent_highlight": "#B88E52",
+          "link": "#121212",
+          "success": "#2D6A4F",
+          "error": "#9E2A2B"
+        }
+      },
+      {
+        "name": "panel",
+        "kind": "solid",
+        "bg": "#FFFFFF",
+        "on_bg": "#121212",
+        "on_bg_muted": "#6E685F",
+        "roles": {
+          "border": "#EFECE6",
+          "badge_bg": "#F4EFE6",
+          "badge_text": "#121212"
+        }
+      },
+      {
+        "name": "editorial_card",
+        "kind": "solid",
+        "bg": "#F5EFE6",
+        "on_bg": "#121212",
+        "on_bg_muted": "#5C5852",
+        "roles": {
+          "border": "#E2D8C7",
+          "tag_text": "#825E28"
+        }
+      },
+      {
+        "name": "glass_panel",
+        "kind": "glass",
+        "contrast_against": "#FAF7F2",
+        "guarantee": "backdrop-blur-xl bg-white/80 border border-black/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
+        "on_bg": "#121212",
+        "on_bg_muted": "#5C5852",
+        "roles": {
+          "accent": "#9E7238"
+        }
+      },
+      {
+        "name": "inverse",
+        "kind": "solid",
+        "bg": "#121212",
+        "on_bg": "#FAF7F2",
+        "on_bg_muted": "#A8A29E",
+        "roles": {
+          "accent": "#D4AF37",
+          "border": "#2A2825"
+        }
+      },
+      {
+        "name": "hero",
+        "kind": "image",
+        "contrast_against": "#1A1816",
+        "guarantee": "scrim: linear-gradient(to right, rgba(18,18,18,0.75) 0%, rgba(18,18,18,0.40) 60%, rgba(18,18,18,0.15) 100%)",
+        "on_bg": "#FAF7F2",
+        "on_bg_muted": "#D6D1CA",
+        "roles": {
+          "link": "#EAD7B7",
+          "accent": "#E5C07B",
+          "error": "#FF8585",
+          "success": "#7AE582"
+        }
+      },
+      {
+        "name": "chat_user_bubble",
+        "kind": "solid",
+        "bg": "#121212",
+        "on_bg": "#FAF7F2",
+        "on_bg_muted": "#D1CCC4"
+      },
+      {
+        "name": "chat_assistant_bubble",
+        "kind": "solid",
+        "bg": "#F2EBE0",
+        "on_bg": "#121212",
+        "on_bg_muted": "#5C5852"
+      }
+    ],
+    "accent": "#121212",
+    "on_accent": "#FAF7F2",
+    "secondary_accent": "#9E7238",
+    "on_secondary_accent": "#FFFFFF"
+  },
+  "typography": {
+    "font_heading": "'Playfair Display Variable', serif",
+    "font_body": "'Instrument Sans Variable', sans-serif",
+    "font_mono": "'IBM Plex Mono', monospace",
+    "scale_px": {
+      "display": 60,
+      "h1": 48,
+      "h2": 36,
+      "h3": 24,
+      "body": 16,
+      "caption": 14
+    },
+    "typesetting_rules": {
+      "display_and_h1": "font-serif tracking-tight leading-[1.08] font-normal sm:font-medium",
+      "h2": "font-serif tracking-tight leading-[1.15] font-normal",
+      "h3": "font-sans font-medium tracking-tight text-xl leading-snug",
+      "eyebrow_and_labels": "font-mono uppercase text-xs tracking-[0.2em] font-semibold text-[#825E28]",
+      "body": "font-sans leading-relaxed tracking-normal text-[#121212]",
+      "currency_pricing": "font-mono font-medium tracking-tight text-[#121212]"
+    }
+  },
+  "entry_surfaces": {
+    "/": "asymmetric editorial magazine hero with featured look split, warm cream canvas, serif display typography, and real catalog showcase",
+    "/style-studio": "atelier studio workbench with clean 3-mode model onboarding panel, high-contrast try-on preview, minimalist outfit slots, and glassmorphic AI style assistant",
+    "/category/[slug]": "editorial runway lookbook grid with 1px hairlines, filter drawer, and quick-add to studio slots",
+    "/product/[id]": "dual-column fashion house product placard with generous negative space, Indian Rupee pricing, and direct 'Try in Studio' CTA",
+    "/search": "refined archive search catalog with minimalist query bar and filtered fashion results",
+    "/cart": "chic shopping bag ledger with warm card surfaces, clear order breakdown, and seamless checkout affordance"
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous luxury spacing (2-3x typical layouts), sharp 0px to subtle 8px border radii, hairline borders (border-[#E5DFD5]), and strong editorial asymmetry",
+    "grid_modes": {
+      "home_hero": "grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center",
+      "studio_workspace": "grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start",
+      "product_catalog": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8"
+    },
+    "hairline_protocol": "Use 1px border lines (#E5DFD5 / #EFECE6) with border-collapse feel rather than heavy drop shadows",
+    "container_padding": "Generous internal padding: p-6 to p-10 on cards and panels to prevent text collisions"
+  },
+  "motion": {
+    "principles": "Subtle, weighted, high-fashion motion (no frantic tech bounciness)",
+    "hover_states": "Hover lift: -translate-y-1 transition-all duration-300 ease-out with shadow-[0_12px_24px_rgba(0,0,0,0.06)]",
+    "reveals": "Gentle opacity and vertical drift (y: 12 -> 0) with staggered delays for product lookbooks",
+    "loading_shimmer": "Warm cream shimmer skeleton: animate-pulse bg-gradient-to-r from-[#F0EAE1] via-[#E8DFD3] to-[#F0EAE1]",
+    "reduced_motion": "Respect prefers-reduced-motion with motion-reduce:transform-none motion-reduce:transition-none"
+  },
+  "glassmorphism": {
+    "recipe": "bg-white/80 backdrop-blur-xl border border-[#E5DFD5] shadow-[0_8px_32px_rgba(18,18,18,0.04)]",
+    "header_nav": "sticky top-0 z-50 bg-[#FAF7F2]/90 backdrop-blur-md border-b border-[#E5DFD5]",
+    "chat_drawer": "bg-white/95 backdrop-blur-xl border border-[#E5DFD5] shadow-xl"
+  },
+  "image_urls": {
+    "editorial_models": [
+      {
+        "url": "https://images.unsplash.com/photo-1613915617430-8ab0fd7c6baf?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwbW9kZWwlMjBlZGl0b3JpYWwlMjBzdHVkaW98ZW58MHx8fHwxNzkyMzI3MTg2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Editorial model in tailored blazer and trousers in warm studio lighting",
+        "usage": "Style Studio hero look preview or main campaign banner"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1668952135120-7d997b1b3778?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHw0fHxmYXNoaW9uJTIwbW9kZWwlMjBlZGl0b3JpYWwlMjBzdHVkaW98ZW58MHx8fHwxNzkyMzI3MTg2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Fashion model in elegant camel trench coat",
+        "usage": "Editorial magazine lookbook feature"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1659522761084-79196b64abe4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwzfHxmYXNoaW9uJTIwbW9kZWwlMjBlZGl0b3JpYWwlMjBzdHVkaW98ZW58MHx8fHwxNzkyMzI3MTg2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Monochrome high-fashion silhouette in structured white ensemble",
+        "usage": "Category banner for contemporary couture"
+      }
+    ]
+  },
+  "component_transformations": {
+    "brand_header": {
+      "path": "/app/src/components/navbar.tsx or layout navigation",
+      "style": "Cream background (#FAF7F2/90) with clean 1px bottom border, serif wordmark 'STYLE ORACLE', monospace navigation tags, and minimalist cart icon with dark pill badge"
+    },
+    "buttons": {
+      "primary": "bg-[#121212] text-[#FAF7F2] hover:bg-[#2A2825] active:scale-[0.99] font-medium tracking-wide rounded-none sm:rounded-md transition-all px-7 py-3",
+      "outline": "border border-[#121212] text-[#121212] bg-transparent hover:bg-[#121212] hover:text-[#FAF7F2] font-medium rounded-none sm:rounded-md transition-all px-7 py-3",
+      "editorial_gold": "bg-[#9E7238] text-white hover:bg-[#855E2B] font-medium rounded-none sm:rounded-md"
+    },
+    "style_studio_redesign": {
+      "onboarding": "Replace purple gradient with cream (#FAF7F2) studio background, sharp bespoke option cards with warm gold active borders, and clear photo upload placards",
+      "model_workspace": "Left model canvas framed like a Vogue editorial proof sheet with aspect-[3/4], subtle cream grain background, and chic download action",
+      "outfit_slots": "Middle column formatted as atelier garment tickets with product thumbnails, clear Indian Rupee (₹) pricing, and '+' slot triggers with gold accents",
+      "chat_sidebar": "Right chat panel restyled into a personal editorial stylist with ink header (#121212), gold tag accents, and crisp product card previews"
+    },
+    "product_cards": {
+      "path": "/app/src/components/product/product-card.tsx",
+      "style": "Aspect-[3/4] clean image container, subtle zoom on hover, minimal serif title, monospace Indian Rupee price (₹), and clean quick-add affordance"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. Replace all violet/purple color utilities (e.g., bg-violet-*, text-violet-*, border-violet-*, bg-purple-*) with the new editorial warm cream/ink palette (#FAF7F2 for canvas, #121212 for ink/text, #9E7238 / #B88E52 for warm antique gold accents).",
+    "2. Update globals.css to import Google fonts Playfair Display (for headings) and Instrument Sans (for body), setting --font-heading to Playfair Display and --font-sans to Instrument Sans.",
+    "3. Keep all existing interactive features intact: onboarding step, selfie upload, avatar generation, preset model, 5 outfit slot assignments, Gemini try-on API call, chat query with product injection, and editorial look generation modal.",
+    "4. Ensure Indian Rupee (₹) currency formatting is consistently styled across all products, slots, and cart entries.",
+    "5. Every interactive element (buttons, upload inputs, slot pickers, chat send, tab switches, cart triggers) must retain or include a clear data-testid attribute for testing."
+  ],
+  "accessibility": {
+    "contrast_compliance": "All body copy reaches at least 4.5:1 against respective surface backgrounds (#121212 on #FAF7F2 is 16.5:1; #5C5852 on #FAF7F2 is 5.8:1; #FAF7F2 on #121212 is 16.5:1).",
+    "focus_states": "Visible focus ring: focus-visible:ring-2 focus-visible:ring-[#121212] focus-visible:ring-offset-2 focus-visible:outline-none",
+    "touch_targets": "Minimum 44x44px touch targets on mobile viewports for all buttons, slots, and interactive pills."
+  }
+}
