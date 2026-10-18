@@ -21,6 +21,9 @@ const colorOptions = [
   "brown", "grey", "gold", "silver", "purple", "orange", "yellow",
 ];
 
+const minPriceOptions = [0, 500, 1000, 2000, 3000, 5000];
+const maxPriceOptions = [1000, 2000, 3000, 5000, 10000, Infinity];
+
 const occasionOptions = [
   "casual", "office", "party", "dinner", "date-night", "wedding-guest",
   "beach", "vacation", "formal", "festive", "brunch",
@@ -32,8 +35,18 @@ export function CategoryPageClient({ slug }: { slug: string }) {
   const [sortBy, setSortBy] = useState("relevance");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, Infinity]);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Brands in this category, most products first
+  const brandOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of products) {
+      if (p.subcategory === slug) counts.set(p.brand, (counts.get(p.brand) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([brand]) => brand);
+  }, [slug]);
 
   const categoryProducts = useMemo(() => {
     let filtered = products.filter((p) => p.subcategory === slug);
@@ -48,6 +61,9 @@ export function CategoryPageClient({ slug }: { slug: string }) {
         selectedOccasions.some((o) => p.occasion.includes(o))
       );
     }
+    if (selectedBrands.length > 0) {
+      filtered = filtered.filter((p) => selectedBrands.includes(p.brand));
+    }
     filtered = filtered.filter(
       (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
     );
@@ -60,7 +76,7 @@ export function CategoryPageClient({ slug }: { slug: string }) {
       default:
         return filtered;
     }
-  }, [slug, sortBy, selectedColors, selectedOccasions, priceRange]);
+  }, [slug, sortBy, selectedColors, selectedOccasions, selectedBrands, priceRange]);
 
   function toggleColor(color: string) {
     setSelectedColors((prev) =>
@@ -74,14 +90,25 @@ export function CategoryPageClient({ slug }: { slug: string }) {
     );
   }
 
+  function toggleBrand(brand: string) {
+    setSelectedBrands((prev) =>
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+    );
+  }
+
   function clearFilters() {
     setSelectedColors([]);
     setSelectedOccasions([]);
-    setPriceRange([0, 10000]);
+    setSelectedBrands([]);
+    setPriceRange([0, Infinity]);
   }
 
   const hasActiveFilters =
-    selectedColors.length > 0 || selectedOccasions.length > 0 || priceRange[0] > 0 || priceRange[1] < 10000;
+    selectedColors.length > 0 ||
+    selectedOccasions.length > 0 ||
+    selectedBrands.length > 0 ||
+    priceRange[0] > 0 ||
+    priceRange[1] < Infinity;
 
   const displayName = category?.name || slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -145,11 +172,9 @@ export function CategoryPageClient({ slug }: { slug: string }) {
                     onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
                     className="w-full text-sm border rounded px-2 py-1.5"
                   >
-                    <option value={0}>₹0</option>
-                    <option value={1000}>₹1,000</option>
-                    <option value={2000}>₹2,000</option>
-                    <option value={3000}>₹3,000</option>
-                    <option value={5000}>₹5,000</option>
+                    {minPriceOptions.map((v) => (
+                      <option key={v} value={v}>₹{v.toLocaleString("en-IN")}</option>
+                    ))}
                   </select>
                   <span className="text-gray-400 self-center">-</span>
                   <select
@@ -157,10 +182,11 @@ export function CategoryPageClient({ slug }: { slug: string }) {
                     onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
                     className="w-full text-sm border rounded px-2 py-1.5"
                   >
-                    <option value={3000}>₹3,000</option>
-                    <option value={5000}>₹5,000</option>
-                    <option value={7000}>₹7,000</option>
-                    <option value={10000}>₹10,000</option>
+                    {maxPriceOptions.map((v) => (
+                      <option key={v} value={v}>
+                        {v === Infinity ? "Any" : `₹${v.toLocaleString("en-IN")}`}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -184,6 +210,26 @@ export function CategoryPageClient({ slug }: { slug: string }) {
                   ))}
                 </div>
               </div>
+
+              {/* Brand */}
+              {brandOptions.length > 1 && (
+                <div>
+                  <h4 className="text-xs font-medium text-gray-700 uppercase tracking-wider mb-3">Brand</h4>
+                  <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                    {brandOptions.map((brand) => (
+                      <label key={brand} className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedBrands.includes(brand)}
+                          onChange={() => toggleBrand(brand)}
+                          className="accent-violet-600"
+                        />
+                        {brand}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Occasion */}
               <div>
@@ -214,6 +260,11 @@ export function CategoryPageClient({ slug }: { slug: string }) {
                 {selectedColors.map((c) => (
                   <Badge key={c} variant="secondary" className="gap-1 capitalize cursor-pointer" onClick={() => toggleColor(c)}>
                     {c} <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+                {selectedBrands.map((b) => (
+                  <Badge key={b} variant="secondary" className="gap-1 cursor-pointer" onClick={() => toggleBrand(b)}>
+                    {b} <X className="h-3 w-3" />
                   </Badge>
                 ))}
                 {selectedOccasions.map((o) => (

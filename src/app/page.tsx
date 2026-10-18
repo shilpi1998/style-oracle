@@ -6,17 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductCard } from "@/components/product/product-card";
 import { products } from "@/data/products";
+import { getCategoryBySlug } from "@/data/categories";
 
-const categoryCards = [
-  { name: "Women's Dresses", slug: "women-dresses", emoji: "👗", count: 15, color: "from-pink-500 to-rose-500" },
-  { name: "Men's Shirts", slug: "men-shirts", emoji: "👔", count: 10, color: "from-blue-500 to-indigo-500" },
-  { name: "Women's Tops", slug: "women-tops", emoji: "👚", count: 10, color: "from-purple-500 to-violet-500" },
-  { name: "Men's T-Shirts", slug: "men-tshirts", emoji: "👕", count: 8, color: "from-teal-500 to-cyan-500" },
-  { name: "Jewelry", slug: "accessories-jewelry", emoji: "💎", count: 8, color: "from-amber-500 to-orange-500" },
-  { name: "Women's Footwear", slug: "footwear-women", emoji: "👠", count: 8, color: "from-rose-500 to-pink-500" },
-  { name: "Men's Trousers", slug: "men-trousers", emoji: "👖", count: 8, color: "from-slate-500 to-gray-600" },
-  { name: "Bags", slug: "accessories-bags", emoji: "👜", count: 7, color: "from-emerald-500 to-green-500" },
-];
+// Featured on the home page, in display order
+const featuredCategories = [
+  { name: "Women's Dresses", slug: "women-dresses" },
+  { name: "Women's Ethnic Wear", slug: "women-ethnic" },
+  { name: "Men's Shirts", slug: "men-shirts" },
+  { name: "Men's Ethnic Wear", slug: "men-ethnic" },
+  { name: "Women's Tops", slug: "women-tops" },
+  { name: "Men's Trousers & Jeans", slug: "men-trousers" },
+  { name: "Watches & Sunglasses", slug: "accessories-watches" },
+  { name: "Women's Footwear", slug: "footwear-women" },
+].map((c) => ({
+  ...c,
+  image: getCategoryBySlug(c.slug)?.image,
+  count: products.filter((p) => p.subcategory === c.slug).length,
+}));
 
 const steps = [
   {
@@ -37,7 +43,10 @@ const steps = [
 ];
 
 export default function HomePage() {
-  const trending = products.slice(0, 8);
+  // One product from each featured category; index 1 because index 0 is the category's cover photo
+  const trending = featuredCategories
+    .map((c) => products.filter((p) => p.subcategory === c.slug)[1])
+    .filter((p) => p !== undefined);
 
   return (
     <div className="min-h-screen">
@@ -110,12 +119,18 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-10">Shop by Category</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categoryCards.map((cat) => (
+            {featuredCategories.map((cat) => (
               <Link key={cat.slug} href={`/category/${cat.slug}`}>
                 <Card className="group cursor-pointer border-0 shadow-sm hover:shadow-md transition-all overflow-hidden">
                   <CardContent className="p-0">
-                    <div className={`h-32 bg-gradient-to-br ${cat.color} flex items-center justify-center`}>
-                      <span className="text-5xl group-hover:scale-110 transition-transform">{cat.emoji}</span>
+                    <div className="h-48 bg-gray-100 overflow-hidden">
+                      {cat.image && (
+                        <img
+                          src={cat.image}
+                          alt={cat.name}
+                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                        />
+                      )}
                     </div>
                     <div className="p-4">
                       <h3 className="font-medium text-gray-900 text-sm">{cat.name}</h3>

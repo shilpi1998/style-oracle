@@ -5,7 +5,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   return (
     <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><p>Loading...</p></div>}>
-      <CategoryPageClient slug={slug} />
+      <CategoryPageClient key={slug} slug={slug} />
     </Suspense>
   );
 }

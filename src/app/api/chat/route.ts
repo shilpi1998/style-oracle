@@ -15,6 +15,8 @@ import {
 import { Product } from "@/lib/types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY! });
+// Lite models answer in seconds; larger ones can take 30s+ per call under load
+const CHAT_MODEL = process.env.GEMINI_CHAT_MODEL || "gemini-3.5-flash-lite";
 
 const SYSTEM_PROMPT = `You are StyleAgent — an enthusiastic, knowledgeable AI fashion stylist for an Indian e-commerce platform called StyleAgent.
 
@@ -26,7 +28,7 @@ YOUR PERSONALITY:
 - Use ₹ for prices (Indian Rupees)
 
 YOUR CAPABILITIES:
-1. SEARCH products by text query (name, color, occasion, style, tags)
+1. SEARCH products by text query (name, brand, color, occasion, style, fabric, tags)
 2. FILTER products by category, gender, price range, colors, occasion, sizes
 3. CURATE complete looks — assemble multi-item outfits for an occasion/vibe
 4. RECOMMEND specific products for a user's needs
@@ -39,6 +41,8 @@ RULES:
 - If the user asks about a specific occasion or vibe, search for relevant products and curate a look
 - Mention the Style Studio when recommending complete looks — users can see the outfit on a model there
 - Keep prices in ₹ and format them nicely (e.g., ₹4,500)
+- Mention the brand with each product, and the discount when a product has an mrp (original price)
+- For festive, traditional or wedding occasions, prefer ethnic wear (women-ethnic: kurtas, kurtis, sarees; men-ethnic: kurtas, Nehru jackets)
 - If asked about something outside fashion/shopping, politely redirect
 
 RESPONSE FORMAT:
@@ -74,7 +78,7 @@ const filterProductsDecl: FunctionDeclaration = {
       subcategory: {
         type: Type.STRING,
         description:
-          "Product subcategory slug: women-dresses, women-tops, women-skirts, men-shirts, men-tshirts, men-trousers, men-blazers, accessories-jewelry, accessories-bags, accessories-watches, footwear-women, footwear-men",
+          "Product subcategory slug: women-dresses, women-tops, women-skirts, women-jeans, women-ethnic, men-shirts, men-tshirts, men-trousers, men-blazers, men-ethnic, accessories-jewelry, accessories-bags, accessories-watches, footwear-women, footwear-men",
       },
       gender: {
         type: Type.STRING,
@@ -202,12 +206,15 @@ function productSummary(p: Product) {
   return {
     id: p.id,
     name: p.name,
+    brand: p.brand,
     price: p.price,
+    mrp: p.mrp,
     category: p.category,
     subcategory: p.subcategory,
     colors: p.colors,
     occasion: p.occasion,
     style: p.style,
+    attributes: p.attributes,
     description: p.description,
     tryOnCompatible: p.tryOnCompatible,
     image: p.images[0] || null,
@@ -227,10 +234,10 @@ function curateLook(
 
   const topCategories =
     gender === "women"
-      ? ["women-dresses", "women-tops"]
-      : ["men-shirts", "men-tshirts"];
+      ? ["women-dresses", "women-tops", "women-ethnic"]
+      : ["men-shirts", "men-tshirts", "men-ethnic"];
   const bottomCategories =
-    gender === "women" ? ["women-skirts"] : ["men-trousers"];
+    gender === "women" ? ["women-skirts", "women-jeans"] : ["men-trousers"];
   const shoeCategories =
     gender === "women" ? ["footwear-women"] : ["footwear-men"];
   const accessoryCategories = [
@@ -244,7 +251,8 @@ function curateLook(
   }
 
   const top = pickBest(topCategories);
-  const isDress = top?.subcategory === "women-dresses";
+  // Dresses and sarees are complete outfits, so they don't need a bottom
+  const isDress = top?.subcategory === "women-dresses" || !!top?.tags.includes("sarees");
   const bottom = isDress ? null : pickBest(bottomCategories);
   const shoes = pickBest(shoeCategories);
   const accessory =
@@ -306,7 +314,7 @@ interface ChatHistoryMessage {
 
 async function callGemini(contents: Content[]) {
   return ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: CHAT_MODEL,
     contents,
     config: {
       systemInstruction: SYSTEM_PROMPT,
@@ -346,15 +354,19 @@ export async function POST(req: NextRequest) {
       const functionCalls = parts.filter((p) => p.functionCall);
       if (functionCalls.length === 0) break;
 
-      const functionResponses = functionCalls.map((fc) => ({
-        functionResponse: {
-          name: fc.functionCall!.name!,
-          response: handleFunctionCall(
-            fc.functionCall!.name!,
-            (fc.functionCall!.args as Record<string, unknown>) || {}
-          ),
-        },
-      }));
+      const functionResponses = functionCalls.map((fc) => {
+        const result = handleFunctionCall(
+          fc.functionCall!.name!,
+          (fc.functionCall!.args as Record<string, unknown>) || {}
+        );
+        return {
+          functionResponse: {
+            name: fc.functionCall!.name!,
+            // Gemini requires function responses to be objects, not arrays
+            response: Array.isArray(result) ? { items: result } : result,
+          },
+        };
+      });
 
       contents.push({
         role: "model",

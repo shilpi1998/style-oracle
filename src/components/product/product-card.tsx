@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
+import { Price } from "@/components/product/price";
 
 export function ProductCard({ product }: { product: Product }) {
   const hasImage = product.images.length > 0;
@@ -39,14 +40,13 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </div>
       <div className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 line-clamp-1">
+          {product.brand}
+        </p>
         <h3 className="text-sm font-medium text-gray-900 group-hover:text-violet-600 transition-colors line-clamp-1">
           {product.name}
         </h3>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-900">
-            ₹{product.price.toLocaleString("en-IN")}
-          </span>
-        </div>
+        <Price product={product} />
         <div className="flex gap-1 flex-wrap">
           {product.colors.slice(0, 3).map((color) => (
             <span key={color} className="text-xs text-gray-500 capitalize">
