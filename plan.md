@@ -28,7 +28,7 @@ AI-powered visual commerce platform for **AI Builder Cup 2026**. Users describe 
 ┌─────────────────┐ ┌──────────────┐   ┌──────────────────┐
 │  Cloud Firestore│ │Gemini 2.5    │   │Gemini 2.5 Flash  │
 │  Product Catalog│ │Flash (Vertex)│   │Image (@google/   │
-│  96 products    │ │Function Call │   │genai SDK)        │
+│  363 products    │ │Function Call │   │genai SDK)        │
 └────────┬────────┘ └──────┬───────┘   │Fashion photo gen │
          │                 │           └──────────────────┘
          │                 ▼
@@ -53,8 +53,8 @@ AI-powered visual commerce platform for **AI Builder Cup 2026**. Users describe 
 | 1 | **Gemini 2.5 Flash (Vertex AI)** | Chat agent with function calling | Shopper Agent — outfit recs, product search, look curation |
 | 2 | **Gemini 2.5 Flash Image** | AI fashion image generation + editing | Style Studio — selfie try-on (image editing), avatar generation, editorial looks |
 | 3 | **Vertex AI Search (Discovery Engine)** | Semantic product indexing & search | Understands "boho beach vibes" → relevant products |
-| 4 | **Cloud Firestore** | Product catalog database | 96 products, real-time reads, keyword search fallback |
-| 5 | **Cloud Storage** | Product image CDN | Bucket `style-oracle-images`, public URLs |
+| 4 | **Cloud Firestore** | Product catalog database | 363 products, real-time reads, keyword search fallback |
+| 5 | **Cloud Storage** | Product image CDN | 1077 product images + 15 category images (local in dev, GCS in prod) |
 | 6 | **Cloud Run** | Serverless app hosting | Next.js 16, port 8080, 512Mi, us-central1 |
 | 7 | **Cloud Build** | CI/CD Docker image builds | Builds standalone Next.js Docker image |
 | 8 | **Artifact Registry** | Docker image storage | `us-central1-docker.pkg.dev/styleagent-hackathon/style-oracle` |
@@ -67,7 +67,7 @@ AI-powered visual commerce platform for **AI Builder Cup 2026**. Users describe 
 
 ### Phase 1: Core Webstore — DONE
 - [x] Next.js 16 project setup with Tailwind + shadcn/ui
-- [x] Product catalog (96 products, 12 subcategories, Indian brands)
+- [x] Product catalog (363 products from Myntra dataset, 15 subcategories, real Indian brands: Elle, UCB, Tonga, etc.)
 - [x] Homepage with hero, categories, trending products
 - [x] Product detail pages with image, pricing, sizes
 - [x] Category browsing + search page
@@ -83,8 +83,8 @@ AI-powered visual commerce platform for **AI Builder Cup 2026**. Users describe 
 - [x] **Gemini 2.5 Flash via Vertex AI** (migrated from GPT-4o)
 
 ### Phase 3: Google Cloud Infrastructure — DONE
-- [x] **Cloud Storage**: Bucket `style-oracle-images` created, 99 images uploaded, publicly accessible
-- [x] **Firestore**: Database created (Native mode, us-central1), 96 products seeded
+- [x] **Cloud Storage**: Bucket `style-oracle-images` created, 1077 images (3 angles per product) uploaded, publicly accessible
+- [x] **Firestore**: Database created (Native mode, us-central1), 363 products seeded
 - [x] **Vertex AI**: Gemini 2.5 Flash working with function calling via ADC
 - [x] All product image URLs updated to GCS (`https://storage.googleapis.com/style-oracle-images/...`)
 - [x] API routes (`/api/chat`, `/api/products`, `/api/search`) reading from Firestore
@@ -93,7 +93,7 @@ AI-powered visual commerce platform for **AI Builder Cup 2026**. Users describe 
 ### Phase 4: Vertex AI Search (Semantic Indexing) — DONE
 - [x] Create Vertex AI Search data store (`style-oracle-catalog`, NO_CONTENT mode)
 - [x] Create search engine (`style-oracle-engine`)
-- [x] Import 96 products as JSONL with `_id` field
+- [x] Import 363 products as JSONL with `_id` field
 - [x] Update chat agent's `search_products` to use Vertex AI Search (with Firestore fallback)
 - [x] Update `/api/search` route to use semantic search
 - [x] `src/lib/vertex-search.ts` — Discovery Engine client with Firestore product lookup
@@ -126,7 +126,7 @@ AI-powered visual commerce platform for **AI Builder Cup 2026**. Users describe 
 - [x] All APIs verified working (products, chat, search)
 
 ### Phase 7: Polish & Demo — IN PROGRESS
-- [ ] Fix remaining 35 low-quality product images
+- [x] Myntra catalog integration: 363 real products, 1077 images (3 angles), rich descriptions, brand names, attributes
 - [x] Update all branding from "StyleAgent" → "Style Oracle" (navbar, header, layout, chat, search, footer)
 - [x] Chat bubble: scrollable messages, attractive welcome screen with gradient text, popup tooltip
 - [ ] Generate rich product descriptions using Gemini

@@ -7,15 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProductCard } from "@/components/product/product-card";
 import { products } from "@/data/products";
 
-const categoryCards = [
-  { name: "Women's Dresses", slug: "women-dresses", emoji: "👗", count: 15, color: "from-pink-500 to-rose-500" },
-  { name: "Men's Shirts", slug: "men-shirts", emoji: "👔", count: 10, color: "from-blue-500 to-indigo-500" },
-  { name: "Women's Tops", slug: "women-tops", emoji: "👚", count: 10, color: "from-purple-500 to-violet-500" },
-  { name: "Men's T-Shirts", slug: "men-tshirts", emoji: "👕", count: 8, color: "from-teal-500 to-cyan-500" },
-  { name: "Jewelry", slug: "accessories-jewelry", emoji: "💎", count: 8, color: "from-amber-500 to-orange-500" },
-  { name: "Women's Footwear", slug: "footwear-women", emoji: "👠", count: 8, color: "from-rose-500 to-pink-500" },
-  { name: "Men's Trousers", slug: "men-trousers", emoji: "👖", count: 8, color: "from-slate-500 to-gray-600" },
-  { name: "Bags", slug: "accessories-bags", emoji: "👜", count: 7, color: "from-emerald-500 to-green-500" },
+const topCategories = [
+  { name: "Women", slug: "women", image: "/images/categories/women-dresses.jpg" },
+  { name: "Men", slug: "men", image: "/images/categories/men-shirts.jpg" },
+  { name: "Accessories", slug: "accessories", image: "/images/categories/accessories-jewelry.jpg" },
+  { name: "Footwear", slug: "footwear", image: "/images/categories/footwear-women.jpg" },
 ];
 
 const steps = [
@@ -109,22 +105,30 @@ export default function HomePage() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-10">Shop by Category</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categoryCards.map((cat) => (
-              <Link key={cat.slug} href={`/category/${cat.slug}`}>
-                <Card className="group cursor-pointer border-0 shadow-sm hover:shadow-md transition-all overflow-hidden">
-                  <CardContent className="p-0">
-                    <div className={`h-32 bg-gradient-to-br ${cat.color} flex items-center justify-center`}>
-                      <span className="text-5xl group-hover:scale-110 transition-transform">{cat.emoji}</span>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-medium text-gray-900 text-sm">{cat.name}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{cat.count} products</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {topCategories.map((cat) => {
+              const count = products.filter((p) => p.category === cat.slug).length;
+              return (
+                <Link key={cat.slug} href={`/category/${cat.slug}`}>
+                  <Card className="group cursor-pointer border-0 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="h-48 relative overflow-hidden bg-gray-100">
+                        <img
+                          src={cat.image}
+                          alt={cat.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <h3 className="font-semibold text-white text-lg">{cat.name}</h3>
+                          <p className="text-sm text-white/80">{count} products</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

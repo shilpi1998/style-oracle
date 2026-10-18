@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readFile } from "fs/promises";
+import { join } from "path";
 import {
   generateImage,
   tryOnProducts,
@@ -82,6 +84,13 @@ async function fetchProductImage(
   url: string
 ): Promise<ProductImage | null> {
   try {
+    if (url.startsWith("/")) {
+      const filePath = join(process.cwd(), "public", url);
+      const buffer = await readFile(filePath);
+      const ext = url.split(".").pop()?.toLowerCase();
+      const mimeType = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+      return { data: buffer.toString("base64"), mimeType };
+    }
     const res = await fetch(url);
     if (!res.ok) return null;
     const buffer = await res.arrayBuffer();

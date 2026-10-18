@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/product/product-card";
 import { products } from "@/data/products";
-import { getCategoryBySlug } from "@/data/categories";
+import { categories } from "@/data/categories";
 import {
   Select,
   SelectContent,
@@ -26,9 +26,36 @@ const occasionOptions = [
   "beach", "vacation", "formal", "festive", "brunch",
 ];
 
-export function CategoryPageClient({ slug }: { slug: string }) {
-  const category = getCategoryBySlug(slug);
+const TOP_LEVEL = ["women", "men", "accessories", "footwear"] as const;
 
+const parentDisplayNames: Record<string, string> = {
+  women: "Women",
+  men: "Men",
+  accessories: "Accessories",
+  footwear: "Footwear",
+};
+
+function getParentCategory(slug: string): string {
+  if (slug.startsWith("women-")) return "women";
+  if (slug.startsWith("men-")) return "men";
+  if (slug.startsWith("accessories-")) return "accessories";
+  if (slug.startsWith("footwear-")) return "footwear";
+  return slug;
+}
+
+export function CategoryPageClient({ slug }: { slug: string }) {
+  const isTopLevel = (TOP_LEVEL as readonly string[]).includes(slug);
+  const parentCategory = isTopLevel ? slug : getParentCategory(slug);
+
+  const subcategoriesForParent = categories.filter((c) => {
+    if (parentCategory === "accessories") return c.slug.startsWith("accessories-");
+    if (parentCategory === "footwear") return c.slug.startsWith("footwear-");
+    return c.slug.startsWith(parentCategory + "-");
+  });
+
+  const [activeSubcategory, setActiveSubcategory] = useState<string | null>(
+    isTopLevel ? null : slug
+  );
   const [sortBy, setSortBy] = useState("relevance");
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
@@ -36,7 +63,16 @@ export function CategoryPageClient({ slug }: { slug: string }) {
   const [showFilters, setShowFilters] = useState(false);
 
   const categoryProducts = useMemo(() => {
-    let filtered = products.filter((p) => p.subcategory === slug);
+    let filtered: typeof products;
+
+    if (isTopLevel) {
+      filtered = products.filter((p) => p.category === parentCategory);
+      if (activeSubcategory) {
+        filtered = filtered.filter((p) => p.subcategory === activeSubcategory);
+      }
+    } else {
+      filtered = products.filter((p) => p.subcategory === slug);
+    }
 
     if (selectedColors.length > 0) {
       filtered = filtered.filter((p) =>
@@ -60,7 +96,9 @@ export function CategoryPageClient({ slug }: { slug: string }) {
       default:
         return filtered;
     }
-  }, [slug, sortBy, selectedColors, selectedOccasions, priceRange]);
+  }, [slug, isTopLevel, parentCategory, activeSubcategory, sortBy, selectedColors, selectedOccasions, priceRange]);
+
+  const allCount = products.filter((p) => p.category === parentCategory).length;
 
   function toggleColor(color: string) {
     setSelectedColors((prev) =>
@@ -83,7 +121,11 @@ export function CategoryPageClient({ slug }: { slug: string }) {
   const hasActiveFilters =
     selectedColors.length > 0 || selectedOccasions.length > 0 || priceRange[0] > 0 || priceRange[1] < 10000;
 
-  const displayName = category?.name || slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const displayName = isTopLevel
+    ? activeSubcategory
+      ? categories.find((c) => c.slug === activeSubcategory)?.name || activeSubcategory
+      : parentDisplayNames[parentCategory] || parentCategory
+    : categories.find((c) => c.slug === slug)?.name || slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,7 +134,34 @@ export function CategoryPageClient({ slug }: { slug: string }) {
         <nav className="flex items-center gap-1 text-sm text-gray-500 mb-6">
           <Link href="/" className="hover:text-violet-600">Home</Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-900 font-medium">{displayName}</span>
+          {isTopLevel ? (
+            <>
+              {activeSubcategory ? (
+                <>
+                  <button
+                    onClick={() => setActiveSubcategory(null)}
+                    className="hover:text-violet-600"
+                  >
+                    {parentDisplayNames[parentCategory]}
+                  </button>
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="text-gray-900 font-medium">
+                    {categories.find((c) => c.slug === activeSubcategory)?.name}
+                  </span>
+                </>
+              ) : (
+                <span className="text-gray-900 font-medium">{parentDisplayNames[parentCategory]}</span>
+              )}
+            </>
+          ) : (
+            <>
+              <Link href={`/category/${parentCategory}`} className="hover:text-violet-600">
+                {parentDisplayNames[parentCategory]}
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <span className="text-gray-900 font-medium">{displayName}</span>
+            </>
+          )}
         </nav>
 
         <div className="flex items-center justify-between mb-6">
@@ -124,9 +193,47 @@ export function CategoryPageClient({ slug }: { slug: string }) {
         </div>
 
         <div className="flex gap-8">
-          {/* Sidebar Filters */}
-          <aside className={`${showFilters ? "block" : "hidden"} lg:block w-56 shrink-0`}>
-            <div className="bg-white rounded-xl p-5 shadow-sm space-y-6 sticky top-20">
+          {/* Sidebar */}
+          <aside className={`${showFilters ? "block" : "hidden"} lg:block w-60 shrink-0 space-y-4`}>
+            {/* Subcategory list — only on top-level pages */}
+            {isTopLevel && (
+              <div className="bg-white rounded-xl p-5 shadow-sm">
+                <h3 className="font-semibold text-sm text-gray-900 mb-3">Categories</h3>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => setActiveSubcategory(null)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                      !activeSubcategory
+                        ? "bg-violet-50 text-violet-700 font-medium"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span>All</span>
+                    <span className="text-xs text-gray-400">{allCount}</span>
+                  </button>
+                  {subcategoriesForParent.map((sub) => {
+                    const count = products.filter((p) => p.subcategory === sub.slug).length;
+                    return (
+                      <button
+                        key={sub.slug}
+                        onClick={() => setActiveSubcategory(sub.slug)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                          activeSubcategory === sub.slug
+                            ? "bg-violet-50 text-violet-700 font-medium"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        <span>{sub.name}</span>
+                        <span className="text-xs text-gray-400">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Filters — always shown */}
+            <div className="bg-white rounded-xl p-5 shadow-sm space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-sm text-gray-900">Filters</h3>
                 {hasActiveFilters && (

@@ -1,19 +1,23 @@
 export interface Product {
   id: string;
   name: string;
+  brand?: string;
   description: string;
   category: "men" | "women" | "accessories" | "footwear";
   subcategory: string;
   occasion: string[];
   style: string[];
   price: number;
+  mrp?: number;
   colors: string[];
   pattern: string;
   sizes: string[];
   gender: "men" | "women" | "unisex";
   images: string[];
   tags: string[];
+  attributes?: Record<string, string>;
   tryOnCompatible: boolean;
+  care?: string;
 }
 
 export interface CartItem {

@@ -1,7 +1,7 @@
 import { Firestore } from "@google-cloud/firestore";
 import { Product } from "./types";
 
-const GCS_BASE = "https://storage.googleapis.com/style-oracle-images/products";
+const IMAGE_BASE = "/images/products";
 
 let db: Firestore;
 
@@ -90,6 +90,6 @@ export async function filterProducts(filters: {
   });
 }
 
-export function getGcsImageUrl(productId: string): string {
-  return `${GCS_BASE}/${productId}.jpg`;
+export function getProductImageUrl(productId: string): string {
+  return `${IMAGE_BASE}/${productId}.jpg`;
 }
