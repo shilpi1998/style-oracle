@@ -153,30 +153,29 @@ export function ProductDetailClient({ id }: { id: string }) {
 
             <Separator className="bg-hairline" />
 
-            <div className="flex gap-3">
-              <Button
-                size="lg"
-                className={`flex-1 h-14 text-base font-medium tracking-wide rounded-none sm:rounded-md shadow-md ${
-                  addedToCart
-                    ? "bg-forest text-white hover:bg-forest/90"
-                    : "bg-ink text-cream hover:bg-ink-soft"
-                }`}
-                onClick={handleAddToCart}
-                data-testid="product-add-to-cart-button"
-              >
-                {addedToCart ? (
-                  <>
-                    <Check className="h-5 w-5 mr-2" />
-                    Added to Bag
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag className="h-5 w-5 mr-2" />
-                    Add to Bag
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              size="lg"
+              variant="outline"
+              className={`w-full h-12 text-sm tracking-wide rounded-none sm:rounded-md ${
+                addedToCart
+                  ? "border-forest text-forest hover:bg-forest hover:text-white"
+                  : "border-gold text-gold-dark hover:bg-gold hover:text-white"
+              }`}
+              onClick={handleAddToCart}
+              data-testid="product-add-to-cart-button"
+            >
+              {addedToCart ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Added to Bag
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  Add to Bag
+                </>
+              )}
+            </Button>
 
             {product.tryOnCompatible && (
               <Link href={`/style-studio?product=${product.id}`} className="block">

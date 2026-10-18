@@ -572,11 +572,7 @@ export default function StyleStudioPage() {
                 disabled={isGeneratingAvatar}
                 data-testid="onboarding-start-button"
               >
-                {modelMode === "preset"
-                  ? "Enter Style Studio"
-                  : modelMode === "avatar"
-                    ? "Enter Studio with Avatar"
-                    : "Enter Studio with My Photo"}
+                Enter Studio
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </CardContent>

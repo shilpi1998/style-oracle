@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   MessageCircle,
@@ -8,16 +8,51 @@ import {
   Send,
   Sparkles,
   Loader2,
-  ExternalLink,
   ShoppingCart,
   Eye,
+  ExternalLink,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Product } from "@/lib/types";
 import { useCart } from "@/lib/cart-context";
+
+function renderMarkdown(text: string) {
+  const lines = text.split("\n");
+  const elements: React.ReactNode[] = [];
+
+  lines.forEach((line, i) => {
+    const trimmed = line.trim();
+    const isBullet = /^[\*\-]\s+/.test(trimmed);
+    const content = isBullet ? trimmed.replace(/^[\*\-]\s+/, "") : trimmed;
+
+    const formatted = content.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/).map((part, j) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={j}>{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return <em key={j}>{part.slice(1, -1)}</em>;
+      }
+      return part;
+    });
+
+    if (isBullet) {
+      elements.push(
+        <div key={i} className="flex gap-2 pl-1 py-0.5">
+          <span className="text-gold-dark mt-0.5 shrink-0">•</span>
+          <span>{formatted}</span>
+        </div>
+      );
+    } else if (trimmed) {
+      elements.push(<p key={i} className={i > 0 ? "mt-2" : ""}>{formatted}</p>);
+    }
+  });
+
+  return <>{elements}</>;
+}
 
 interface Message {
   id: string;
@@ -28,27 +63,60 @@ interface Message {
   isWelcome?: boolean;
 }
 
+const STORAGE_KEY = "style-oracle-chat";
+
+function loadMessages(): Message[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [];
+}
+
+function saveMessages(msgs: Message[]) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
+  } catch {}
+}
+
 export function ChatBubble() {
   const [isOpen, setIsOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(() => [
-    {
-      id: "welcome",
-      role: "assistant",
-      content: "Hey! I'm your Style Oracle",
-      isWelcome: true,
-      timestamp: 0,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = loadMessages();
+    if (saved.length > 0) return saved;
+    return [
+      {
+        id: "welcome",
+        role: "assistant",
+        content:
+          "Hi, I'm Style Oracle — your personal stylist. Tell me what you're looking for!",
+        isWelcome: true,
+        timestamp: 0,
+      },
+    ];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isLoading]);
+    saveMessages(messages);
+  }, [messages]);
+
+  const scrollToBottom = useCallback(() => {
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading, isOpen, scrollToBottom]);
 
   useEffect(() => {
     if (isOpen) {
@@ -101,8 +169,7 @@ export function ChatBubble() {
         {
           id: `error-${Date.now()}`,
           role: "assistant",
-          content:
-            "Oops, something went wrong. Please try again!",
+          content: "Oops, something went wrong. Please try again!",
           timestamp: Date.now(),
         },
       ]);
@@ -124,9 +191,11 @@ export function ChatBubble() {
           data-testid="chat-popup-tooltip"
         >
           <div className="bg-white/95 backdrop-blur-xl rounded-md shadow-[0_12px_28px_rgba(18,18,18,0.12)] border border-hairline px-4 py-3 flex items-center gap-2.5 max-w-[220px]">
-            <span className="font-heading italic text-gold-dark text-lg leading-none">&Agrave;</span>
+            <span className="font-heading italic text-gold-dark text-lg leading-none">
+              &Agrave;
+            </span>
             <p className="text-sm text-ink font-medium leading-tight">
-              Hi! I&apos;m your shopper agent
+              Need styling help? Ask me!
             </p>
             <button
               onClick={(e) => {
@@ -169,13 +238,18 @@ export function ChatBubble() {
       {/* Chat Panel */}
       {isOpen && (
         <div
-          className="fixed bottom-24 right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] h-[560px] bg-white/95 backdrop-blur-xl rounded-md shadow-[0_24px_60px_rgba(18,18,18,0.18)] border border-hairline flex flex-col overflow-hidden animate-bounce-in"
+          className={cn(
+            "fixed right-6 z-50 w-[400px] max-w-[calc(100vw-3rem)] bg-white/95 backdrop-blur-xl rounded-md shadow-[0_24px_60px_rgba(18,18,18,0.18)] border border-hairline flex flex-col overflow-hidden animate-bounce-in transition-all duration-300",
+            isExpanded
+              ? "top-4 bottom-4"
+              : "bottom-24 h-[560px]"
+          )}
           data-testid="chat-panel"
         >
           {/* Header */}
-          <div className="px-4 py-3.5 bg-ink text-cream flex items-center gap-2.5">
+          <div className="px-4 py-3.5 bg-ink text-cream flex items-center gap-2.5 shrink-0">
             <Sparkles className="h-4 w-4 text-gold-light" />
-            <div>
+            <div className="flex-1">
               <h3 className="font-heading text-lg tracking-tight leading-none">
                 Style <span className="italic text-gold-light">Oracle</span>
               </h3>
@@ -183,10 +257,26 @@ export function ChatBubble() {
                 Powered by Gemini + Vertex AI
               </p>
             </div>
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-cream/60 hover:text-cream transition-colors p-1"
+              aria-label={isExpanded ? "Minimize chat" : "Expand chat"}
+              data-testid="chat-expand-button"
+            >
+              {isExpanded ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </button>
           </div>
 
-          {/* Messages */}
-          <ScrollArea className="flex-1 p-4 bg-cream/60" ref={scrollRef}>
+          {/* Messages — plain scrollable div */}
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto p-4 bg-cream/60"
+            data-testid="chat-messages"
+          >
             <div className="space-y-4">
               {messages.map((msg) => (
                 <div key={msg.id}>
@@ -203,32 +293,29 @@ export function ChatBubble() {
                       </p>
                     </div>
                   ) : (
-                  <div
-                    className={cn(
-                      "flex",
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    )}
-                  >
                     <div
                       className={cn(
-                        "max-w-[85%] px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed",
-                        msg.role === "user"
-                          ? "bg-ink text-cream"
-                          : "bg-white border border-hairline text-ink"
+                        "flex",
+                        msg.role === "user" ? "justify-end" : "justify-start"
                       )}
                     >
-                      {msg.content}
+                      <div
+                        className={cn(
+                          "max-w-[85%] px-4 py-2.5 text-sm leading-relaxed",
+                          msg.role === "user"
+                            ? "bg-ink text-cream whitespace-pre-wrap"
+                            : "bg-white border border-hairline text-ink"
+                        )}
+                      >
+                        {msg.role === "user" ? msg.content : renderMarkdown(msg.content)}
+                      </div>
                     </div>
-                  </div>
                   )}
                   {/* Product Cards */}
                   {msg.products && msg.products.length > 0 && (
-                    <div className="mt-2 space-y-2">
+                    <div className="mt-2 space-y-2.5">
                       {msg.products.slice(0, 6).map((product) => (
-                        <ProductMiniCard
-                          key={product.id}
-                          product={product}
-                        />
+                        <ProductMiniCard key={product.id} product={product} />
                       ))}
                       <Link
                         href="/style-studio"
@@ -254,10 +341,13 @@ export function ChatBubble() {
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Input */}
-          <form onSubmit={handleSend} className="p-3 border-t border-hairline bg-white">
+          <form
+            onSubmit={handleSend}
+            className="p-3 border-t border-hairline bg-white shrink-0"
+          >
             <div className="flex gap-2">
               <Input
                 value={input}
@@ -294,41 +384,49 @@ function ProductMiniCard({ product }: { product: Product }) {
   }
 
   return (
-    <div className="bg-white border border-hairline hover:border-gold/60 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(18,18,18,0.08)] transition-all duration-300">
+    <div className="bg-white border border-hairline hover:border-gold/60 transition-all duration-300 overflow-hidden">
       <Link
         href={`/product/${product.id}`}
-        className="flex items-center gap-3 p-2.5 group"
+        target="_blank"
+        className="block group"
         data-testid={`chat-product-card-${product.id}`}
       >
-        <div className="w-12 h-12 bg-parchment flex items-center justify-center shrink-0 overflow-hidden border border-hairline-soft">
+        {/* Product image */}
+        <div className="w-full h-36 bg-parchment overflow-hidden">
           {product.images[0] ? (
             <img
               src={product.images[0]}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <span className="text-lg">
-              {product.category === "women"
-                ? "👗"
-                : product.category === "men"
-                  ? "👔"
-                  : product.category === "footwear"
-                    ? "👟"
-                    : "💎"}
-            </span>
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-4xl">
+                {product.category === "women"
+                  ? "👗"
+                  : product.category === "men"
+                    ? "👔"
+                    : product.category === "footwear"
+                      ? "👟"
+                      : "💎"}
+              </span>
+            </div>
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-ink truncate group-hover:text-gold-dark transition-colors">
+
+        {/* Product info */}
+        <div className="p-2.5">
+          <p className="text-sm font-medium text-ink line-clamp-1 group-hover:text-gold-dark transition-colors">
             {product.name}
           </p>
           {product.brand && (
-            <p className="font-mono text-[10px] text-smoke">{product.brand}</p>
+            <p className="font-mono text-[10px] text-smoke mt-0.5">
+              {product.brand}
+            </p>
           )}
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="font-mono text-sm text-gold-dark">
-              &rupee;{product.price.toLocaleString("en-IN")}
+          <div className="flex items-center gap-2 mt-1">
+            <span className="font-mono text-sm font-medium text-gold-dark">
+              ₹{product.price.toLocaleString("en-IN")}
             </span>
             {product.tryOnCompatible && (
               <span className="font-mono text-[9px] uppercase tracking-[0.12em] px-1.5 py-0.5 bg-parchment text-gold-dark border border-hairline">
@@ -337,9 +435,10 @@ function ProductMiniCard({ product }: { product: Product }) {
             )}
           </div>
         </div>
-        <ExternalLink className="h-3.5 w-3.5 text-smoke/40 group-hover:text-gold shrink-0" />
       </Link>
-      <div className="px-2.5 pb-2 flex gap-2">
+
+      {/* Action buttons */}
+      <div className="px-2.5 pb-2.5 flex gap-2">
         <button
           onClick={handleAddToCart}
           className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider bg-ink text-cream hover:bg-ink-soft transition-colors"
@@ -349,9 +448,11 @@ function ProductMiniCard({ product }: { product: Product }) {
         </button>
         <Link
           href={`/product/${product.id}`}
+          target="_blank"
           className="flex items-center justify-center gap-1 px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider border border-hairline text-smoke hover:border-gold hover:text-gold-dark transition-colors"
         >
           View Details
+          <ExternalLink className="h-2.5 w-2.5" />
         </Link>
       </div>
     </div>

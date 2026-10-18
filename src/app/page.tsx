@@ -44,7 +44,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* ============ HERO — asymmetric editorial split ============ */}
-      <section className="relative overflow-hidden border-b border-hairline">
+      <section className="relative border-b border-hairline">
         <div className="absolute inset-0 texture-grain" aria-hidden />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
@@ -98,7 +98,7 @@ export default function HomePage() {
               </Reveal>
               <Reveal delay={320}>
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-smoke/60 mt-12">
-                  Powered by Gemini · Vertex AI · Firestore
+                  Powered by Gemini · Vertex AI · Google Cloud
                 </p>
               </Reveal>
             </div>
@@ -115,29 +115,7 @@ export default function HomePage() {
                       className="w-full aspect-[3/4] object-cover"
                     />
                   </div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-smoke mt-3 flex justify-between">
-                    <span>Look 01 — The Tailored Edit</span>
-                    <span className="text-gold-dark">FW Collection</span>
-                  </p>
 
-                  {/* Overlapping glass card */}
-                  <Link
-                    href="/style-studio"
-                    className="absolute -bottom-6 -left-6 sm:-left-10 glass-panel rounded-md px-5 py-4 flex items-center gap-3 hover:shadow-[0_12px_28px_rgba(18,18,18,0.10)] transition-all duration-300 hover:-translate-y-1"
-                    data-testid="hero-tryon-card"
-                  >
-                    <span className="w-9 h-9 flex items-center justify-center bg-parchment text-gold-dark rounded-full shrink-0">
-                      <Sparkles className="h-4 w-4" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-medium text-ink">
-                        Virtual Try-On Studio
-                      </span>
-                      <span className="block font-mono text-[10px] uppercase tracking-[0.15em] text-smoke mt-0.5">
-                        See it on you →
-                      </span>
-                    </span>
-                  </Link>
                 </div>
               </Reveal>
             </div>
