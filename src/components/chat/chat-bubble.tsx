@@ -8,7 +8,6 @@ import {
   Send,
   Sparkles,
   Loader2,
-  ShoppingBag,
   ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,16 +22,18 @@ interface Message {
   content: string;
   products?: Product[];
   timestamp: number;
+  isWelcome?: boolean;
 }
 
 export function ChatBubble() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const [messages, setMessages] = useState<Message[]>(() => [
     {
       id: "welcome",
       role: "assistant",
-      content:
-        "Hey! I'm your Style Agent. Tell me what you're looking for — an occasion, a vibe, a budget — and I'll curate the perfect look for you. Try:\n\n• \"Beach dinner look under ₹15,000\"\n• \"Smart casual outfit for a meetup\"\n• \"Festive wear for Diwali party\"",
+      content: "Hey! I'm your Style Oracle",
+      isWelcome: true,
       timestamp: 0,
     },
   ]);
@@ -45,6 +46,15 @@ export function ChatBubble() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowPopup(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowPopup(true), 3000);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
@@ -100,9 +110,40 @@ export function ChatBubble() {
 
   return (
     <>
+      {/* Popup Tooltip */}
+      {showPopup && !isOpen && (
+        <div
+          className="fixed bottom-24 right-6 z-50 animate-bounce-in cursor-pointer"
+          onClick={() => {
+            setShowPopup(false);
+            setIsOpen(true);
+          }}
+        >
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-2.5 max-w-[220px]">
+            <span className="text-xl">👋</span>
+            <p className="text-sm text-gray-700 font-medium leading-tight">
+              Hi! I&apos;m your shopper agent
+            </p>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPopup(false);
+              }}
+              className="text-gray-400 hover:text-gray-600 shrink-0"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+          <div className="absolute -bottom-1.5 right-8 w-3 h-3 bg-white border-r border-b border-gray-200 rotate-45" />
+        </div>
+      )}
+
       {/* Floating Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setShowPopup(false);
+        }}
         className={cn(
           "fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105",
           isOpen
@@ -124,9 +165,9 @@ export function ChatBubble() {
           <div className="px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
             <div>
-              <h3 className="font-semibold text-sm">Style Agent</h3>
+              <h3 className="font-semibold text-sm">Style Oracle</h3>
               <p className="text-xs text-violet-200">
-                Powered by Gemini 2.0 Flash
+                Powered by Gemini + Vertex AI
               </p>
             </div>
           </div>
@@ -136,6 +177,19 @@ export function ChatBubble() {
             <div className="space-y-4">
               {messages.map((msg) => (
                 <div key={msg.id}>
+                  {msg.isWelcome ? (
+                    <div className="text-center py-6">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 mb-3">
+                        <Sparkles className="h-6 w-6 text-violet-600" />
+                      </div>
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent mb-1">
+                        {msg.content}
+                      </h3>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Tell me an occasion, a vibe, or a budget
+                      </p>
+                    </div>
+                  ) : (
                   <div
                     className={cn(
                       "flex",
@@ -144,7 +198,7 @@ export function ChatBubble() {
                   >
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap",
+                        "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap leading-relaxed",
                         msg.role === "user"
                           ? "bg-violet-600 text-white rounded-br-md"
                           : "bg-gray-100 text-gray-800 rounded-bl-md"
@@ -153,6 +207,7 @@ export function ChatBubble() {
                       {msg.content}
                     </div>
                   </div>
+                  )}
                   {/* Product Cards */}
                   {msg.products && msg.products.length > 0 && (
                     <div className="mt-2 space-y-2">

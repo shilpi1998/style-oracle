@@ -171,7 +171,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-violet-400" />
-              <span className="text-white font-semibold">StyleAgent</span>
+              <span className="text-white font-semibold">Style Oracle</span>
             </div>
             <p className="text-sm">
               Built with Google Gemini, Imagen 3, Vertex AI &amp; Firebase for AI Builder Cup 2026

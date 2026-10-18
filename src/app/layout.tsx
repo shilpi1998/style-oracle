@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "StyleAgent — Describe the Vibe. See the Look. Buy it All.",
+  title: "Style Oracle — Describe the Vibe. See the Look. Buy it All.",
   description:
     "AI-powered conversational visual commerce. Describe your style, see complete looks on a model, and shop with confidence.",
 };

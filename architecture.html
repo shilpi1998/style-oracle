@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Style Oracle — Architecture Flow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0f0a1f;
+    color: #e2e0f0;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, #a78bfa, #c084fc, #e879f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #7c7a9a;
+    margin-bottom: 48px;
+  }
+  .subtitle span { color: #a78bfa; font-weight: 600; }
+
+  /* ===== FLOW SECTIONS ===== */
+  .flow-section {
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .flow-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+  }
+  .flow-title .num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    color: #0f0a1f;
+  }
+
+  .ft-catalog { background: #1a2e1a; color: #86efac; }
+  .ft-catalog .num { background: #86efac; }
+  .ft-search { background: #1e1a2e; color: #c4b5fd; }
+  .ft-search .num { background: #c4b5fd; }
+  .ft-studio { background: #2e1a2a; color: #f0abfc; }
+  .ft-studio .num { background: #f0abfc; }
+  .ft-deploy { background: #1a2535; color: #93c5fd; }
+  .ft-deploy .num { background: #93c5fd; }
+
+  /* ===== FLOW TRACK ===== */
+  .flow-track {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+    flex: 1;
+    position: relative;
+  }
+
+  .step-box {
+    background: #1a1530;
+    border: 1.5px solid #2d2650;
+    border-radius: 14px;
+    padding: 16px 14px;
+    text-align: center;
+    width: 100%;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    z-index: 2;
+  }
+  .step-box:hover {
+    border-color: #7c3aed;
+    transform: translateY(-2px);
+  }
+  .step-box .icon { font-size: 26px; margin-bottom: 6px; }
+  .step-box .sname { font-size: 13px; font-weight: 700; color: #f0eeff; margin-bottom: 3px; }
+  .step-box .sdesc { font-size: 10px; color: #8b89a8; line-height: 1.4; }
+  .step-box .stool {
+    margin-top: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+  .tool-green { background: #16331b; color: #86efac; }
+  .tool-purple { background: #271840; color: #c4b5fd; }
+  .tool-pink { background: #351a30; color: #f0abfc; }
+  .tool-blue { background: #1a2535; color: #93c5fd; }
+  .tool-amber { background: #332b1a; color: #fcd34d; }
+
+  /* Arrow between steps */
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .arrow-line {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .arrow-line .shaft {
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, #3d3666, #7c3aed);
+    border-radius: 1px;
+  }
+  .arrow-line .head {
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid #7c3aed;
+  }
+  .arrow-label {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #6d6a8a;
+    white-space: nowrap;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Special: branch arrow (fork) */
+  .branch-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    min-width: 150px;
+    flex: 1;
+  }
+  .branch-label {
+    font-size: 9px;
+    color: #6d6a8a;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Result callout at end of flow */
+  .result-box {
+    background: linear-gradient(135deg, #1e1540, #2a1a50);
+    border: 1.5px dashed #7c3aed;
+    border-radius: 14px;
+    padding: 16px 14px;
+    text-align: center;
+    min-width: 150px;
+    flex: 1;
+  }
+  .result-box .icon { font-size: 26px; margin-bottom: 6px; }
+  .result-box .sname { font-size: 13px; font-weight: 700; color: #c4b5fd; margin-bottom: 3px; }
+  .result-box .sdesc { font-size: 10px; color: #8b89a8; line-height: 1.4; }
+
+  /* ===== DATA FLOW ANNOTATION ===== */
+  .data-note {
+    font-size: 10px;
+    color: #5a587a;
+    margin-top: 8px;
+    padding-left: 12px;
+    border-left: 2px solid #2d2650;
+    line-height: 1.6;
+  }
+  .data-note code {
+    background: #1a1530;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #a78bfa;
+  }
+
+  /* ===== LEGEND ===== */
+  .legend {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #2d2650;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #8b89a8;
+  }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Style Oracle</h1>
+  <p class="subtitle">End-to-End Architecture Flow &nbsp;·&nbsp; <span>8 Google Cloud Tools</span> &nbsp;·&nbsp; AI Builder Cup 2026</p>
+
+  <!-- ============ FLOW 1: CATALOG INDEXING ============ -->
+  <div class="flow-section">
+    <div class="flow-title ft-catalog"><span class="num">1</span> Catalog Indexing Pipeline</div>
+    <div class="flow-track">
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">📦</div>
+          <div class="sname">Product Data</div>
+          <div class="sdesc">96 products, 12 subcategories, Indian brands, prices, images</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">seed script</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🗄️</div>
+          <div class="sname">Cloud Firestore</div>
+          <div class="sdesc">Native mode DB — stores full product docs with real-time reads</div>
+          <div class="stool tool-green">Google Tool #4</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">JSONL export</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🔍</div>
+          <div class="sname">Vertex AI Search</div>
+          <div class="sdesc">Discovery Engine indexes products for semantic understanding</div>
+          <div class="stool tool-purple">Google Tool #3</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">upload</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">📷</div>
+          <div class="sname">Cloud Storage</div>
+          <div class="sdesc">99 product images served as public CDN URLs</div>
+          <div class="stool tool-green">Google Tool #5</div>
+        </div>
+      </div>
+    </div>
+    <div class="data-note">
+      Products seeded to Firestore → exported as JSONL → imported into Vertex AI Search data store <code>style-oracle-catalog</code><br>
+      Images uploaded to GCS bucket <code>style-oracle-images</code> → public URLs stored in each product doc
+    </div>
+  </div>
+
+  <!-- ============ FLOW 2: SHOPPER AGENT (CHAT + SEARCH) ============ -->
+  <div class="flow-section">
+    <div class="flow-title ft-search"><span class="num">2</span> Shopper Agent &amp; Search Flow</div>
+    <div class="flow-track">
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">👤</div>
+          <div class="sname">User Query</div>
+          <div class="sdesc">"Show me boho beach outfits under ₹10k"</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">POST /api/chat</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🧠</div>
+          <div class="sname">Gemini 2.5 Flash</div>
+          <div class="sdesc">Understands intent, picks function tool: search, filter, curate, or detail</div>
+          <div class="stool tool-purple">Google Tool #1</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">function call</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🔍</div>
+          <div class="sname">Vertex AI Search</div>
+          <div class="sdesc">Semantic match → "boho beach" maps to relevant dresses, sandals, jewelry</div>
+          <div class="stool tool-purple">Google Tool #3</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">product IDs</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🗄️</div>
+          <div class="sname">Firestore Lookup</div>
+          <div class="sdesc">Fetches full product docs — images, price, sizes, colors</div>
+          <div class="stool tool-green">Google Tool #4</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">results</span></div></div>
+      <div class="step">
+        <div class="result-box">
+          <div class="icon">💬</div>
+          <div class="sname">Chat Response</div>
+          <div class="sdesc">Styled message + product cards with images, prices, "Try On" badges</div>
+        </div>
+      </div>
+    </div>
+    <div class="data-note">
+      Gemini picks from 4 function tools: <code>search_products</code> <code>filter_products</code> <code>get_product_details</code> <code>curate_look</code><br>
+      Vertex AI Search is primary; Firestore keyword search is fallback if semantic returns empty
+    </div>
+  </div>
+
+  <!-- ============ FLOW 3: STYLE STUDIO ============ -->
+  <div class="flow-section">
+    <div class="flow-title ft-studio"><span class="num">3</span> Style Studio — Virtual Try-On Flow</div>
+    <div class="flow-track">
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🤳</div>
+          <div class="sname">Upload Selfie</div>
+          <div class="sdesc">User uploads their photo (or picks AI Model mode for no-upload fallback)</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">base64</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">👗</div>
+          <div class="sname">Pick Products</div>
+          <div class="sdesc">Select from catalog into 5 slots — or chat sidebar to discover products</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">selfie + product images</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">📷</div>
+          <div class="sname">Fetch Product Images</div>
+          <div class="sdesc">Product images fetched from Cloud Storage to send alongside selfie</div>
+          <div class="stool tool-green">Google Tool #5</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">multi-image edit</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🖼️</div>
+          <div class="sname">Gemini Flash Image</div>
+          <div class="sdesc">Image editing: keeps person's face &amp; body, changes outfit to catalog products</div>
+          <div class="stool tool-pink">Google Tool #2</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">result</span></div></div>
+      <div class="step">
+        <div class="result-box">
+          <div class="icon">✨</div>
+          <div class="sname">You In The Outfit</div>
+          <div class="sdesc">Same person, wearing catalog products<br>+ Editorial mode: cinematic location</div>
+        </div>
+      </div>
+    </div>
+    <div class="data-note">
+      <strong>3 modes:</strong> Selfie (your photo + product images → image edit) &nbsp;|&nbsp; Avatar (selfie → AI fashion illustration → try on) &nbsp;|&nbsp; AI Model (text-only, no upload)<br>
+      API fetches product images from <code>Cloud Storage</code> and sends them alongside user photo to Gemini for multi-image editing<br>
+      Avatar mode: <code>POST /api/style-studio/avatar</code> generates stylized fashion avatar preserving user's face<br>
+      Editorial mode: occasion-based backgrounds (Mumbai cafe, Goa beach, palace garden…) for magazine-quality final look<br>
+      Product strip below image shows all worn items with individual <code>Add to Cart</code> buttons → cart context
+    </div>
+  </div>
+
+  <!-- ============ FLOW 4: DEPLOYMENT ============ -->
+  <div class="flow-section">
+    <div class="flow-title ft-deploy"><span class="num">4</span> Build &amp; Deploy Pipeline</div>
+    <div class="flow-track">
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">💻</div>
+          <div class="sname">Source Code</div>
+          <div class="sdesc">Next.js 16 app — App Router, Tailwind, shadcn/ui</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">git push</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🏗️</div>
+          <div class="sname">Cloud Build</div>
+          <div class="sdesc">Builds standalone Docker image from Dockerfile</div>
+          <div class="stool tool-blue">Google Tool #7</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">push image</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">📦</div>
+          <div class="sname">Artifact Registry</div>
+          <div class="sdesc">Stores versioned Docker images for deployment</div>
+          <div class="stool tool-blue">Google Tool #8</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">deploy</span></div></div>
+      <div class="step">
+        <div class="step-box">
+          <div class="icon">🚀</div>
+          <div class="sname">Cloud Run</div>
+          <div class="sdesc">Serverless container — auto-scales, 512Mi, port 8080</div>
+          <div class="stool tool-blue">Google Tool #6</div>
+        </div>
+      </div>
+      <div class="arrow"><div class="arrow-line"><div class="shaft"></div><div class="head"></div><span class="arrow-label">public URL</span></div></div>
+      <div class="step">
+        <div class="result-box">
+          <div class="icon">🌐</div>
+          <div class="sname">Live App</div>
+          <div class="sdesc">style-oracle-*.run.app<br>Webstore + Agent + Studio</div>
+        </div>
+      </div>
+    </div>
+    <div class="data-note">
+      IAM roles on Cloud Run service account: <code>datastore.user</code> <code>storage.objectViewer</code> <code>aiplatform.user</code> <code>discoveryengine.viewer</code>
+    </div>
+  </div>
+
+  <!-- ===== LEGEND ===== -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#86efac"></div> Data Layer (Firestore, Storage)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c4b5fd"></div> AI Layer (Gemini, Vertex Search)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0abfc"></div> Generation (Gemini Image)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div> Infrastructure (Build, Registry, Run)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#7c3aed; border: 1.5px dashed #c4b5fd;"></div> User-facing result</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -34,7 +34,7 @@ function SearchResults() {
             <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h2 className="text-lg font-medium text-gray-900 mb-2">No products found</h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Try a different search term, or ask our Style Agent for personalized recommendations.
+              Try a different search term, or ask Style Oracle for personalized recommendations.
             </p>
             <div className="flex gap-3 justify-center">
               <Link href="/">
@@ -42,7 +42,7 @@ function SearchResults() {
               </Link>
               <Button className="bg-violet-600 hover:bg-violet-700">
                 <MessageCircle className="h-4 w-4 mr-2" />
-                Ask Style Agent
+                Ask Style Oracle
               </Button>
             </div>
           </div>

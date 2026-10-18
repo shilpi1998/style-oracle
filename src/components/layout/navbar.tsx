@@ -70,7 +70,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <Sparkles className="h-6 w-6 text-violet-600" />
             <span className="text-xl font-bold tracking-tight text-gray-900">
-              Style<span className="text-violet-600">Agent</span>
+              Style<span className="text-violet-600">Oracle</span>
             </span>
           </Link>
 

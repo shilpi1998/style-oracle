@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { filterProducts, getProductById } from "@/data/products";
+import { filterProducts, getProductById } from "@/lib/firestore";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
   const id = searchParams.get("id");
   if (id) {
-    const product = getProductById(id);
+    const product = await getProductById(id);
     if (!product)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(product);
   }
 
-  const results = filterProducts({
+  const results = await filterProducts({
     subcategory: searchParams.get("subcategory") || undefined,
     gender: searchParams.get("gender") || undefined,
     minPrice: searchParams.get("minPrice")
