@@ -9,12 +9,15 @@ import {
   Sparkles,
   Loader2,
   ExternalLink,
+  ShoppingCart,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Product } from "@/lib/types";
+import { useCart } from "@/lib/cart-context";
 
 interface Message {
   id: string;
@@ -217,6 +220,15 @@ export function ChatBubble() {
                           product={product}
                         />
                       ))}
+                      <Link
+                        href="/style-studio"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-50 border border-violet-200 hover:bg-violet-100 transition-colors group"
+                      >
+                        <Eye className="h-4 w-4 text-violet-600" />
+                        <span className="text-xs font-medium text-violet-700 group-hover:text-violet-800">
+                          See how these look on you — try Style Studio
+                        </span>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -261,46 +273,72 @@ export function ChatBubble() {
 }
 
 function ProductMiniCard({ product }: { product: Product }) {
+  const { addItem } = useCart();
+
+  function handleAddToCart(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, product.sizes[0] || "M", product.colors[0] || "");
+  }
+
   return (
-    <Link
-      href={`/product/${product.id}`}
-      className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-gray-200 hover:border-violet-300 hover:shadow-sm transition-all group"
-    >
-      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-        {product.images[0] ? (
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <span className="text-lg">
-            {product.category === "women"
-              ? "👗"
-              : product.category === "men"
-                ? "👔"
-                : product.category === "footwear"
-                  ? "👟"
-                  : "💎"}
-          </span>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-violet-600">
-          {product.name}
-        </p>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-900">
-            ₹{product.price.toLocaleString("en-IN")}
-          </span>
-          {product.tryOnCompatible && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-violet-100 text-violet-700 rounded-full font-medium">
-              Try On
+    <div className="rounded-xl bg-white border border-gray-200 hover:border-violet-300 hover:shadow-sm transition-all overflow-hidden">
+      <Link
+        href={`/product/${product.id}`}
+        className="flex items-center gap-3 p-2.5 group"
+      >
+        <div className="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+          {product.images[0] ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-lg">
+              {product.category === "women"
+                ? "👗"
+                : product.category === "men"
+                  ? "👔"
+                  : product.category === "footwear"
+                    ? "👟"
+                    : "💎"}
             </span>
           )}
         </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate group-hover:text-violet-600">
+            {product.name}
+          </p>
+          {product.brand && (
+            <p className="text-[10px] text-gray-500">{product.brand}</p>
+          )}
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-sm font-semibold text-gray-900">
+              ₹{product.price.toLocaleString("en-IN")}
+            </span>
+            {product.colors[0] && (
+              <span className="text-[10px] text-gray-400 capitalize">{product.colors[0]}</span>
+            )}
+          </div>
+        </div>
+        <ExternalLink className="h-3.5 w-3.5 text-gray-400 group-hover:text-violet-500 shrink-0" />
+      </Link>
+      <div className="px-2.5 pb-2 flex gap-2">
+        <button
+          onClick={handleAddToCart}
+          className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] font-medium rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+        >
+          <ShoppingCart className="h-3 w-3" />
+          Add to Cart
+        </button>
+        <Link
+          href={`/product/${product.id}`}
+          className="flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-medium rounded-lg border border-gray-200 text-gray-600 hover:border-violet-300 hover:text-violet-600 transition-colors"
+        >
+          View Details
+        </Link>
       </div>
-      <ExternalLink className="h-3.5 w-3.5 text-gray-400 group-hover:text-violet-500 shrink-0" />
-    </Link>
+    </div>
   );
 }
