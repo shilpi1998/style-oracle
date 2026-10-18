@@ -51,9 +51,8 @@ export default function HomePage() {
               Buy it all.
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-2xl">
-              Stop scrolling through endless product lists. Tell our AI what you need —
-              &quot;beach anniversary dinner, elegant but relaxed, under ₹15,000&quot; —
-              and see the complete look on a model wearing real products.
+              Stop scrolling through endless product lists. Tell our AI what you need
+              and see the complete look on you wearing real products.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/style-studio">
