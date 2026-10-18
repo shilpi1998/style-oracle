@@ -19,6 +19,7 @@ import {
   ImageIcon,
   CheckCircle,
   Star,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -206,14 +207,17 @@ export default function StyleStudioPage() {
   }
 
   function handleStartStudio() {
-    if ((modelMode === "selfie" || modelMode === "avatar") && !selfieBase64) {
-      alert("Please upload a selfie first.");
+    if (!selfieBase64) {
+      alert("Please upload a photo first.");
       return;
     }
     if (modelMode === "avatar" && !avatarBase64) {
       alert("Please generate your avatar first.");
       return;
     }
+    setGeneratedLook(null);
+    setGenerateError(null);
+    setEditorialImage(null);
     setStep("studio");
   }
 
@@ -453,12 +457,13 @@ export default function StyleStudioPage() {
 
               <Separator className="bg-hairline" />
 
-              {/* Model Mode */}
+              {/* Selfie Upload Area */}
+              {/* Model Mode — Selfie or Avatar */}
               <div>
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-smoke mb-3">
                   How do you want to try on outfits?
                 </p>
-                <div className="grid sm:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <button
                     onClick={() => setModelMode("selfie")}
                     data-testid="onboarding-mode-selfie"
@@ -490,129 +495,110 @@ export default function StyleStudioPage() {
                       Upload a selfie — AI creates a fashion avatar that looks like you
                     </p>
                   </button>
-
-                  <button
-                    onClick={() => setModelMode("preset")}
-                    data-testid="onboarding-mode-preset"
-                    className={`p-5 rounded-md border text-left transition-all duration-300 hover:-translate-y-0.5 ${
-                      modelMode === "preset"
-                        ? "border-gold bg-parchment shadow-[0_8px_20px_rgba(158,114,56,0.12)]"
-                        : "border-hairline bg-white/60 hover:border-gold/50"
-                    }`}
-                  >
-                    <Users className={`h-7 w-7 mb-4 ${modelMode === "preset" ? "text-gold-dark" : "text-smoke/50"}`} />
-                    <h4 className="font-medium text-ink text-sm">AI Model</h4>
-                    <p className="text-xs text-smoke mt-1 leading-relaxed">
-                      No upload needed — see outfits on an AI-generated model
-                    </p>
-                  </button>
                 </div>
               </div>
 
               {/* Selfie Upload Area */}
-              {(modelMode === "selfie" || modelMode === "avatar") && (
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                    data-testid="onboarding-file-input"
-                  />
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                  data-testid="onboarding-file-input"
+                />
 
-                  {!selfiePreview ? (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border border-dashed border-[#d8cfbe] rounded-md p-10 text-center cursor-pointer hover:border-gold hover:bg-parchment/40 transition-all duration-300 bg-white/50"
-                      data-testid="onboarding-upload-area"
-                    >
-                      <Upload className="h-9 w-9 text-gold/60 mx-auto mb-4" />
-                      <p className="text-sm text-ink mb-1.5">Upload a clear, front-facing photo</p>
-                      <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-smoke/70 mb-5">
-                        JPG or PNG &middot; max 5MB
-                      </p>
-                      <Button variant="outline" size="sm" type="button" className="border-ink text-ink hover:bg-ink hover:text-cream rounded-none sm:rounded-sm">
-                        <Upload className="h-3.5 w-3.5 mr-2" />
-                        Choose Photo
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-6 items-start">
-                      <div className="relative">
-                        <div className="w-32 h-40 overflow-hidden border border-hairline p-1.5 bg-white shadow-[0_8px_20px_rgba(18,18,18,0.06)]">
-                          <img src={selfiePreview} alt="Your selfie" className="w-full h-full object-cover" />
-                        </div>
-                        <button
-                          onClick={handleRemoveSelfie}
-                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-wine text-white flex items-center justify-center shadow-md hover:opacity-90"
-                          data-testid="onboarding-remove-selfie"
-                          aria-label="Remove photo"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                        <div className="flex items-center gap-1 mt-2 justify-center">
-                          <CheckCircle className="h-3.5 w-3.5 text-forest" />
-                          <span className="font-mono text-[10px] uppercase tracking-wider text-forest">Uploaded</span>
-                        </div>
+                {!selfiePreview ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border border-dashed border-[#d8cfbe] rounded-md p-10 text-center cursor-pointer hover:border-gold hover:bg-parchment/40 transition-all duration-300 bg-white/50"
+                    data-testid="onboarding-upload-area"
+                  >
+                    <Upload className="h-9 w-9 text-gold/60 mx-auto mb-4" />
+                    <p className="text-sm text-ink mb-1.5">Upload a clear, front-facing photo</p>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-smoke/70 mb-5">
+                      JPG or PNG &middot; any size
+                    </p>
+                    <Button variant="outline" size="sm" type="button" className="border-ink text-ink hover:bg-ink hover:text-cream rounded-none sm:rounded-sm">
+                      <Upload className="h-3.5 w-3.5 mr-2" />
+                      Choose Photo
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-6 items-start">
+                    <div className="relative">
+                      <div className="w-32 h-40 overflow-hidden border border-hairline p-1.5 bg-white shadow-[0_8px_20px_rgba(18,18,18,0.06)]">
+                        <img src={selfiePreview} alt="Your selfie" className="w-full h-full object-cover" />
                       </div>
-
-                      {modelMode === "avatar" && (
-                        <div className="flex-1">
-                          {avatarPreview ? (
-                            <div>
-                              <div className="w-32 h-40 overflow-hidden border border-gold/40 p-1.5 bg-white shadow-[0_8px_20px_rgba(18,18,18,0.06)]">
-                                <img src={avatarPreview} alt="Your avatar" className="w-full h-full object-cover" />
-                              </div>
-                              <div className="flex items-center gap-1 mt-2">
-                                <CheckCircle className="h-3.5 w-3.5 text-forest" />
-                                <span className="font-mono text-[10px] uppercase tracking-wider text-forest">Avatar ready</span>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="text-center pt-8">
-                              <Button
-                                onClick={handleGenerateAvatar}
-                                disabled={isGeneratingAvatar}
-                                className="bg-ink text-cream hover:bg-ink-soft rounded-none sm:rounded-sm"
-                                data-testid="onboarding-avatar-generate"
-                              >
-                                {isGeneratingAvatar ? (
-                                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating Avatar...</>
-                                ) : (
-                                  <><Sparkles className="h-4 w-4 mr-2" />Generate My Avatar</>
-                                )}
-                              </Button>
-                              <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-smoke/70 mt-3">Takes ~10 seconds</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {modelMode === "selfie" && (
-                        <div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="border-ink text-ink hover:bg-ink hover:text-cream rounded-none sm:rounded-sm"
-                            data-testid="onboarding-change-photo"
-                          >
-                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                            Change Photo
-                          </Button>
-                        </div>
-                      )}
+                      <button
+                        onClick={handleRemoveSelfie}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-wine text-white flex items-center justify-center shadow-md hover:opacity-90"
+                        data-testid="onboarding-remove-selfie"
+                        aria-label="Remove photo"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                      <div className="flex items-center gap-1 mt-2 justify-center">
+                        <CheckCircle className="h-3.5 w-3.5 text-forest" />
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-forest">Uploaded</span>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
+
+                    {modelMode === "avatar" && (
+                      <div className="flex-1">
+                        {avatarPreview ? (
+                          <div>
+                            <div className="w-32 h-40 overflow-hidden border border-gold/40 p-1.5 bg-white shadow-[0_8px_20px_rgba(18,18,18,0.06)]">
+                              <img src={avatarPreview} alt="Your avatar" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex items-center gap-1 mt-2">
+                              <CheckCircle className="h-3.5 w-3.5 text-forest" />
+                              <span className="font-mono text-[10px] uppercase tracking-wider text-forest">Avatar ready</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center pt-8">
+                            <Button
+                              onClick={handleGenerateAvatar}
+                              disabled={isGeneratingAvatar}
+                              className="bg-ink text-cream hover:bg-ink-soft rounded-none sm:rounded-sm"
+                              data-testid="onboarding-avatar-generate"
+                            >
+                              {isGeneratingAvatar ? (
+                                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating Avatar...</>
+                              ) : (
+                                <><Sparkles className="h-4 w-4 mr-2" />Generate My Avatar</>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {modelMode === "selfie" && (
+                      <div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-ink text-ink hover:bg-ink hover:text-cream rounded-none sm:rounded-sm"
+                          data-testid="onboarding-change-photo"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                          Change Photo
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <Button
                 size="lg"
                 className="w-full bg-ink text-cream hover:bg-ink-soft h-12 text-sm tracking-wide rounded-none sm:rounded-md"
                 onClick={handleStartStudio}
-                disabled={isGeneratingAvatar}
+                disabled={isGeneratingAvatar || !selfieBase64}
                 data-testid="onboarding-start-button"
               >
                 Enter Studio
@@ -638,11 +624,8 @@ export default function StyleStudioPage() {
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold-dark mb-1">The Atelier</p>
               <h1 className="font-heading text-2xl tracking-tight text-ink leading-none">Style Studio</h1>
             </div>
-            <span className="font-mono text-[10px] uppercase tracking-[0.15em] bg-parchment text-gold-dark border border-hairline px-2.5 py-1.5">
-              {modelMode === "selfie" ? "Your Photo" : modelMode === "avatar" ? "Your Avatar" : "AI Model"}
-            </span>
             {personImg && (
-              <div className="w-9 h-9 overflow-hidden border border-hairline p-0.5 bg-white">
+              <div className="w-14 h-14 overflow-hidden border border-gold/40 p-0.5 bg-white shadow-[0_4px_12px_rgba(18,18,18,0.08)]">
                 <img
                   src={modelMode === "avatar" && avatarPreview ? avatarPreview : selfiePreview || ""}
                   alt="You"
@@ -707,10 +690,10 @@ export default function StyleStudioPage() {
                     </Button>
                   </div>
                 ) : generatedLook ? (
-                  <img src={generatedLook} alt="Generated outfit look" className="w-full h-full object-cover" />
+                  <img src={generatedLook} alt="Generated outfit look" className="w-full h-full object-contain" />
                 ) : personImg ? (
-                  <div className="text-center p-8">
-                    <div className="w-24 h-24 overflow-hidden mx-auto mb-5 border border-hairline p-1 bg-white shadow-[0_8px_20px_rgba(18,18,18,0.06)]">
+                  <div className="text-center p-4 flex flex-col items-center justify-center h-full">
+                    <div className="w-64 h-80 overflow-hidden mx-auto mb-5 border-2 border-gold/30 p-1.5 bg-white shadow-[0_12px_32px_rgba(18,18,18,0.1)]">
                       <img
                         src={modelMode === "avatar" && avatarPreview ? avatarPreview : selfiePreview || ""}
                         alt="You"
@@ -736,15 +719,30 @@ export default function StyleStudioPage() {
             {generatedLook && (
               <div className="flex items-center justify-between mt-3 px-1">
                 <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-smoke/60">Powered by Gemini on Vertex AI</span>
-                <a
-                  href={generatedLook}
-                  download="style-oracle-look.png"
-                  className="font-mono text-[11px] uppercase tracking-[0.12em] text-gold-dark hover:text-gold flex items-center gap-1.5 border-b border-gold/40 pb-0.5"
-                  data-testid="studio-download-look-link"
-                >
-                  <Download className="h-3 w-3" />
-                  Download
-                </a>
+                <div className="flex items-center gap-4">
+                  <a
+                    href={generatedLook}
+                    download="style-oracle-look.png"
+                    className="font-mono text-[11px] uppercase tracking-[0.12em] text-gold-dark hover:text-gold flex items-center gap-1.5 border-b border-gold/40 pb-0.5"
+                    data-testid="studio-download-look-link"
+                  >
+                    <Download className="h-3 w-3" />
+                    Download
+                  </a>
+                  <button
+                    onClick={async () => {
+                      const itemsList = filledProducts.map((p) => `• ${p.name} — ₹${p.price.toLocaleString("en-IN")}`).join("\n");
+                      const text = `Check out this look I styled on Style Oracle! ✨\n\n${itemsList}\n\nTotal: ₹${totalPrice.toLocaleString("en-IN")}\n\nTry it yourself: ${window.location.origin}/style-studio`;
+                      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                      window.open(whatsappUrl, "_blank");
+                    }}
+                    className="font-mono text-[11px] uppercase tracking-[0.12em] text-forest hover:text-forest/80 flex items-center gap-1.5 border-b border-forest/40 pb-0.5"
+                    data-testid="studio-share-whatsapp"
+                  >
+                    <Share2 className="h-3 w-3" />
+                    WhatsApp
+                  </button>
+                </div>
               </div>
             )}
 
