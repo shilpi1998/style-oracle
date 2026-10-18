@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateAvatar } from "@/lib/imagen";
 
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const { selfieBase64, mimeType } = (await req.json()) as {

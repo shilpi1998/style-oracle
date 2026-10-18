@@ -130,24 +130,48 @@ export default function StyleStudioPage() {
       .map((r) => r.product);
   }, [searchQuery, gender]);
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  function resizeImage(file: File, maxDim: number, quality: number): Promise<{ dataUrl: string; base64: string }> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        const base64 = dataUrl.split(",")[1];
+        resolve({ dataUrl, base64 });
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert("File too large. Max 5MB.");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File too large. Max 10MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const base64 = dataUrl.split(",")[1];
+    try {
+      const { dataUrl, base64 } = await resizeImage(file, 800, 0.8);
+      console.log("[StyleStudio] resized image size:", Math.round(base64.length / 1024), "KB");
       setSelfieBase64(base64);
-      setSelfieMimeType(file.type || "image/jpeg");
+      setSelfieMimeType("image/jpeg");
       setSelfiePreview(dataUrl);
       setAvatarBase64(null);
       setAvatarPreview(null);
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      alert("Could not process image. Try another photo.");
+    }
   }
 
   function handleRemoveSelfie() {
@@ -249,22 +273,40 @@ export default function StyleStudioPage() {
     const occasion = occasions[0] || "casual";
     const person = getPersonImage();
 
+    const payload = {
+      items,
+      gender,
+      occasion,
+      mode,
+      modelMode,
+      personImage: person?.base64 || undefined,
+      personMimeType: person?.mimeType || undefined,
+    };
+    console.log("[StyleStudio] generate request:", {
+      modelMode,
+      hasPersonImage: !!person?.base64,
+      personImageLen: person?.base64?.length,
+      personMimeType: person?.mimeType,
+      itemCount: items.length,
+      items: items.map((i) => ({ name: i.name, imageUrl: i.imageUrl })),
+      payloadSizeMB: (JSON.stringify(payload).length / (1024 * 1024)).toFixed(2),
+    });
+
     try {
       const res = await fetch("/api/style-studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items,
-          gender,
-          occasion,
-          mode,
-          modelMode,
-          personImage: person?.base64 || undefined,
-          personMimeType: person?.mimeType || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      console.log("[StyleStudio] response status:", res.status);
       const data = await res.json();
+      console.log("[StyleStudio] response:", {
+        hasImage: !!data.image,
+        imageLen: data.image?.length,
+        error: data.error,
+        prompt: data.prompt?.slice(0, 100),
+      });
 
       if (!res.ok) {
         if (mode === "studio")
@@ -278,7 +320,8 @@ export default function StyleStudioPage() {
       } else {
         setGeneratedLook(data.image);
       }
-    } catch {
+    } catch (err) {
+      console.error("[StyleStudio] fetch error:", err);
       if (mode === "studio")
         setGenerateError("Failed to connect. Please try again.");
     } finally {

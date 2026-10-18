@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 const API_KEY = process.env.GOOGLE_GEMINI_API_KEY || "";
-const MODEL = "gemini-2.5-flash-image";
+const MODEL = "gemini-nano-banana-2.1";
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
@@ -72,7 +72,9 @@ export async function tryOnProducts(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const parts: any[] = [];
 
-  parts.push({ text: "Image 1 — This is a photo of a person:" });
+  parts.push({ text: request.prompt });
+
+  parts.push({ text: "\n\nREFERENCE PERSON (keep this person's face, hair, body exactly):" });
   parts.push({
     inlineData: {
       mimeType: request.personMimeType,
@@ -82,14 +84,14 @@ export async function tryOnProducts(
 
   request.productImages.forEach((product, i) => {
     parts.push({
-      text: `Image ${i + 2} — This is a fashion product from our catalog:`,
+      text: `\nCLOTHING ITEM ${i + 1} TO PUT ON THE PERSON ABOVE:`,
     });
     parts.push({
       inlineData: { mimeType: product.mimeType, data: product.data },
     });
   });
 
-  parts.push({ text: request.prompt });
+  parts.push({ text: "\nGenerate ONE image of the reference person wearing the clothing items shown above. The person's face and body must be clearly recognizable." });
 
   const response = await ai.models.generateContent({
     model: MODEL,

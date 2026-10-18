@@ -8,6 +8,9 @@ import {
   ProductImage,
 } from "@/lib/imagen";
 
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 interface OutfitItem {
   name: string;
   colors: string[];
@@ -73,11 +76,15 @@ function buildTryOnPrompt(
 
   if (mode === "editorial") {
     const bg = editorialBackgrounds[occasion] || editorialBackgrounds.casual;
-    return `Generate a new image showing the SAME person from Image 1 wearing ALL these exact catalog products: ${itemList}. Keep the person's identity (face, hair, skin tone) exactly the same. Style them in ${bg}. Cinematic lighting, shallow depth of field, Vogue India editorial quality. Full body shot.`;
+    const itemDesc = items.map((item) => `${item.colors?.[0] || ""} ${item.name}`.trim()).join(", ");
+    return `VIRTUAL TRY-ON EDITORIAL: Edit the reference person photo to show them wearing: ${itemDesc}. Keep their face, hair, skin tone IDENTICAL. Style the scene in ${bg}. Cinematic lighting, shallow depth of field, Vogue India editorial quality. Full body shot.`;
   }
 
   const personRef = isAvatar ? "avatar" : "person";
-  return `Generate a new image showing the SAME ${personRef} from Image 1 wearing ALL ${itemCount > 1 ? "these exact catalog products" : "this exact catalog product"}: ${itemList}. Keep the ${personRef}'s identity (face, hair, skin tone, body) exactly the same. Only change their clothing to match the catalog product${itemCount > 1 ? "s" : ""}. Combine all the products into one complete styled outfit for a ${occasion} occasion. Full body shot, professional fashion photography, clean white studio background.`;
+  const itemDesc = items.map((item) => `${item.colors?.[0] || ""} ${item.name}`.trim()).join(", ");
+  return `VIRTUAL TRY-ON: Edit the reference ${personRef} photo to show them wearing: ${itemDesc}.
+
+Keep the ${personRef}'s face, hair, skin tone, and body IDENTICAL — only change their clothes to match the product image${itemCount > 1 ? "s" : ""} provided below. The clothing must look exactly like the catalog photo (same color, pattern, design). Full body, ${occasion} styling, clean studio background.`;
 }
 
 async function fetchProductImage(
@@ -123,6 +130,18 @@ export async function POST(req: NextRequest) {
       modelMode?: "selfie" | "avatar" | "preset";
     };
 
+    console.log("[generate] request:", {
+      modelMode,
+      hasPersonImage: !!personImage,
+      personImageLen: personImage?.length,
+      personMimeType,
+      itemCount: items?.length,
+      items: items?.map((i) => ({ name: i.name, hasImageUrl: !!i.imageUrl })),
+      gender,
+      occasion,
+      mode,
+    });
+
     if (!items || items.length === 0) {
       return NextResponse.json(
         { error: "No items provided" },
@@ -140,8 +159,14 @@ export async function POST(req: NextRequest) {
       const productImages: ProductImage[] = [];
       for (const item of items) {
         if (item.imageUrl) {
+          console.log("[generate] fetching product image:", item.imageUrl);
           const img = await fetchProductImage(item.imageUrl);
-          if (img) productImages.push(img);
+          if (img) {
+            console.log("[generate] product image fetched, size:", img.data.length, "mime:", img.mimeType);
+            productImages.push(img);
+          } else {
+            console.log("[generate] FAILED to fetch product image:", item.imageUrl);
+          }
         }
       }
 
@@ -152,27 +177,32 @@ export async function POST(req: NextRequest) {
         mode,
         modelMode === "avatar"
       );
+      console.log("[generate] tryOn prompt:", prompt);
+      console.log("[generate] personImage size:", personImage.length, "productImages:", productImages.length);
 
       if (productImages.length === 0) {
-        // Fallback: no product images available, use text-only with person image
+        console.log("[generate] no product images, using text-only with person");
         const result = await tryOnProducts({
           personImage,
           personMimeType: personMimeType || "image/jpeg",
           productImages: [],
           prompt: buildTryOnPrompt(items, gender, occ, mode, modelMode === "avatar"),
         });
+        console.log("[generate] tryOn result (no products):", { mimeType: result.mimeType, imageLen: result.image.length });
         return NextResponse.json({
           image: `data:${result.mimeType};base64,${result.image}`,
           prompt,
         });
       }
 
+      console.log("[generate] calling tryOnProducts with", productImages.length, "product images");
       const result = await tryOnProducts({
         personImage,
         personMimeType: personMimeType || "image/jpeg",
         productImages,
         prompt,
       });
+      console.log("[generate] tryOn result:", { mimeType: result.mimeType, imageLen: result.image.length });
 
       return NextResponse.json({
         image: `data:${result.mimeType};base64,${result.image}`,
@@ -181,12 +211,15 @@ export async function POST(req: NextRequest) {
     }
 
     // --- PRESET MODE: text-only generation (no person photo) ---
+    console.log("[generate] preset mode — text-only generation");
     const prompt = buildTextPrompt(items, gender, occ, mode);
+    console.log("[generate] prompt:", prompt);
     const result = await generateImage({
       prompt,
       negativePrompt:
         "deformed, blurry, low quality, distorted face, extra limbs, bad anatomy, cropped, watermark, text, logo",
     });
+    console.log("[generate] preset result:", { mimeType: result.mimeType, imageLen: result.image.length });
 
     return NextResponse.json({
       image: `data:${result.mimeType};base64,${result.image}`,
