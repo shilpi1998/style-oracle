@@ -99,7 +99,8 @@ export default function StyleStudioPage() {
               p.subcategory.includes("top") ||
               p.subcategory.includes("shirt") ||
               p.subcategory.includes("tshirt") ||
-              p.subcategory.includes("blazer")) &&
+              p.subcategory.includes("blazer") ||
+              p.subcategory.includes("ethnic")) &&
             (p.gender === genderFilter || p.gender === "unisex")
         );
       case "bottom":

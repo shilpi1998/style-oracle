@@ -1,18 +1,24 @@
 export interface Product {
   id: string;
   name: string;
+  brand: string;
   description: string;
   category: "men" | "women" | "accessories" | "footwear";
   subcategory: string;
   occasion: string[];
   style: string[];
   price: number;
+  /** Original price, set only when the product is discounted */
+  mrp?: number;
   colors: string[];
   pattern: string;
   sizes: string[];
   gender: "men" | "women" | "unisex";
   images: string[];
   tags: string[];
+  /** Display-ready details, e.g. { Fabric: "Cotton", Fit: "Slim Fit" } */
+  attributes: Record<string, string>;
+  care?: string;
   tryOnCompatible: boolean;
 }
 

@@ -5,7 +5,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div>}>
-      <ProductDetailClient id={id} />
+      <ProductDetailClient key={id} id={id} />
     </Suspense>
   );
 }

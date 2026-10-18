@@ -37,12 +37,13 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <div key={`${item.product.id}-${item.size}-${item.color}`} className="bg-white rounded-xl p-4 shadow-sm flex gap-4">
-                <div className="w-20 h-24 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                  <span className="text-2xl">
-                    {item.product.category === "women" ? "👗" : item.product.category === "men" ? "👔" : "💎"}
-                  </span>
+                <div className="w-20 h-24 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                  {item.product.images[0] && (
+                    <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.product.brand}</p>
                   <Link href={`/product/${item.product.id}`} className="font-medium text-gray-900 hover:text-violet-600 text-sm line-clamp-1">
                     {item.product.name}
                   </Link>
