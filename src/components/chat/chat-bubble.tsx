@@ -387,7 +387,6 @@ function ProductMiniCard({ product }: { product: Product }) {
     <div className="bg-white border border-hairline hover:border-gold/60 transition-all duration-300 overflow-hidden">
       <Link
         href={`/product/${product.id}`}
-        target="_blank"
         className="block group"
         data-testid={`chat-product-card-${product.id}`}
       >
@@ -448,7 +447,6 @@ function ProductMiniCard({ product }: { product: Product }) {
         </button>
         <Link
           href={`/product/${product.id}`}
-          target="_blank"
           className="flex items-center justify-center gap-1 px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider border border-hairline text-smoke hover:border-gold hover:text-gold-dark transition-colors"
         >
           View Details
