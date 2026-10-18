@@ -9,9 +9,9 @@ import {
 import {
   searchProducts as firestoreSearch,
   filterProducts,
-  getProductById,
   getAllProducts,
 } from "@/lib/firestore";
+import { products as localProducts } from "@/data/products";
 import { semanticSearch } from "@/lib/vertex-search";
 import { Product } from "@/lib/types";
 
@@ -178,7 +178,7 @@ async function handleFunctionCall(
       return results.slice(0, 8).map(productSummary);
     }
     case "get_product_details": {
-      const product = await getProductById(args.productId as string);
+      const product = localProducts.find((p) => p.id === args.productId);
       if (!product) return { error: "Product not found" };
       return productSummary(product);
     }
@@ -327,7 +327,7 @@ export async function POST(req: NextRequest) {
         for (const item of resultArray) {
           const rid = (item as { id?: string }).id;
           if (rid) {
-            const p = await getProductById(rid);
+            const p = localProducts.find((lp) => lp.id === rid);
             if (p) allFunctionResults.push(p);
           }
         }
